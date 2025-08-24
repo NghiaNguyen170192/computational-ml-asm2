@@ -93,13 +93,24 @@ This is done by editing the **hosts file** in your operating system to map names
   docker compose restart
   ```
 
-- **Remove all containers and volumes (use with caution):**
+- **Remove all containers:**
 
   ```sh
   docker compose down
   ```
 
-# Custom DAGs and Plugins
-
-- Place your DAG files in the `dags/` directory.
-- Place custom plugins (e.g., operators, hooks) in the `plugins/` directory.
+# Folder structure
+```
+├── config/ # Configuration files for Airflow or services
+├── dags/ # Airflow DAGs (workflows)
+├── migrations/ # Database migration scripts
+│ └── init.sql # Initialization script for Postgres (used by docker postgres-init service)
+├── nginx/
+│ └── conf.d/ # Nginx configuration files
+├── plugins/ # Custom Airflow plugins
+├── .env.example # Environment variable template
+├── Dockerfile # Custom Airflow Docker image
+├── README.md # Project documentation
+├── docker-compose.yaml # Docker Compose setup for Airflow, Postgres, pgAdmin, MinIO
+└── requirements.txt # Python dependencies for Airflow
+```
