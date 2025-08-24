@@ -1,0 +1,4 @@
+orjson
+tqdm
+pandas
+python-binance==1.0.29
