@@ -63,6 +63,8 @@ services:
 
     postgres-init:
         image: postgres:13
+        hostname: postgres-init
+        container_name: postgres-init
         depends_on:
             postgres:
                 condition: service_healthy
@@ -70,7 +72,10 @@ services:
             - ./migrations:/migrations:ro
         entrypoint: >
             bash -c "
-            psql -h postgres -U ${POSTGRES_USER} -d ${POSTGRES_DB} -f /migrations/init.sql
+            for f in /migrations/*.sql; do
+                echo Running migration: $$f;
+                psql -h postgres -U ${POSTGRES_USER} -d ${POSTGRES_DB} -f \"$$f\";
+            done
             "
         environment:
             POSTGRES_USER: ${POSTGRES_USER}
@@ -119,24 +124,30 @@ services:
 
     minio-init:
         image: minio/mc:latest
+        hostname: minio-init
+        container_name: minio-init
         entrypoint: >
             /bin/sh -c "
-            sleep 10 &&
-            mc alias set local http://minio:9000 ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD} &&
-            mc mb local/${MINIO_BUCKET_NAME} || true
+            until mc alias set local http://minio:9000 ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD}; do
+              echo 'Waiting for MinIO...';
+              sleep 2;
+            done &&
+            mc mb local/${MINIO_BUCKET_NAME} || true &&
             mc mb local/${MINIO_BUCKET_NAME}/klines || true &&
             mc mb local/${MINIO_BUCKET_NAME}/klines/inprogress || true &&
-            mc mb local/${MINIO_BUCKET_NAME}/klines/processed || true
+            mc mb local/${MINIO_BUCKET_NAME}/klines/processed || true &&
+            exit 0
             "
+        restart: "no"
+        depends_on:
+            minio:
+                condition: service_healthy
         environment:
             MINIO_ROOT_USER: ${MINIO_ROOT_USER}
             MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
             MINIO_BUCKET_NAME: ${MINIO_BUCKET_NAME}
         networks:
             - nginx-network
-        depends_on:
-            minio:
-                condition: service_healthy
 
     airflow-webserver:
         <<: *airflow-common
@@ -263,9 +274,7 @@ services:
                     --conn-extra '{\"host\": \"http://minio:9000\", \"region_name\": \"us-east-1\"}' &&
 
                 airflow dags unpause dag_binance_backfill || true &&
-                airflow dags unpause dag_binance_daily || true &&
-                
-                exec /entrypoint bash -c
+                airflow dags unpause dag_binance_daily || true
                 "
 
         environment:
@@ -348,10 +357,17 @@ services:
             - "443:443"
         volumes:
             - ./nginx/conf.d:/etc/nginx/conf.d
-             - ./certbot/www:/var/www/certbot
-             - ./nginx/ssl:/etc/letsencrypt
+            - ./certbot/www:/var/www/certbot
+            - ./nginx/ssl:/etc/letsencrypt
         networks:
             - nginx-network
+        depends_on:
+            minio:
+                condition: service_healthy
+            airflow-webserver:
+                condition: service_healthy
+            pgadmin:
+                condition: service_started
 
     certbot:
         image: certbot/certbot

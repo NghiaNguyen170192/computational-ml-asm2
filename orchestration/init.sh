@@ -1,27 +1,39 @@
 #!/bin/bash
 
-# === CONFIGURATION ===
-DOMAIN="yourdomain"            # Replace with your domain
-EMAIL="you@example.com"            # Replace with your email
-WEBROOT_PATH="/var/www/certbot"    # Must match the volume mount
+DOMAINS=("pgadmin.local" "minio.local" "airflow.local")
+NGINX_SSL_DIR="./nginx/ssl"   # relative to orchestration/
+KEY_FILE="$NGINX_SSL_DIR/dev.key"
+CERT_FILE="$NGINX_SSL_DIR/dev.crt"
 NGINX_CONTAINER="nginx"
-CERTBOT_CONTAINER="certbot"
 
-# === STEP 1: Ensure Nginx is running ===
-echo "🔄 Starting Nginx container..."
-docker compose up -d $NGINX_CONTAINER
+mkdir -p "$NGINX_SSL_DIR"
 
-# === STEP 2: Request SSL certificate ===
-echo "🔐 Requesting SSL certificate for $DOMAIN..."
-docker exec $CERTBOT_CONTAINER certbot certonly \
-    --webroot -w $WEBROOT_PATH \
-    --email $EMAIL \
-    --agree-tos \
-    --no-eff-email \
-    -d $DOMAIN
+echo "Generating self-signed certificate for: ${DOMAINS[*]}..."
+openssl req -x509 -nodes -days 365 \
+    -newkey rsa:2048 \
+    -keyout "$KEY_FILE" \
+    -out "$CERT_FILE" \
+    -subj "/CN=${DOMAINS[0]}" \
+    -addext "subjectAltName=DNS:${DOMAINS[0]},DNS:${DOMAINS[1]},DNS:${DOMAINS[2]}"
 
-# === STEP 3: Reload Nginx to apply new certificate ===
-echo "🔁 Reloading Nginx to apply certificate..."
-docker exec $NGINX_CONTAINER nginx -s reload
+if [[ $? -ne 0 ]]; then
+    echo "Failed to generate certificate"
+    exit 1
+fi
 
-echo "✅ SSL certificate generation complete!"
+echo "Self-signed certificate created at $CERT_FILE"
+
+echo "Building Docker images without cache..."
+docker build . --no-cache
+if [[ $? -ne 0 ]]; then
+    echo "Docker build failed"
+    exit 1
+fi
+
+echo "Starting all services with docker compose..."
+docker compose up -d
+if [[ $? -eq 0 ]]; then
+    echo "All services started successfully"
+else
+    echo "Failed to start services"
+fi

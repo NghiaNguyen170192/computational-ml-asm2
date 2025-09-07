@@ -64,21 +64,22 @@ This is done by editing the **hosts file** in your operating system to map names
    MINIO_BUCKET_NAME=change_me
     ```
 
-4. `docker compose up -d`
+4. Run `docker build . --no-cache`
+5. Run `docker compose up -d`
 
-5. **Access Airflow UI**  
+6. **Access Airflow UI**  
    Open [http://airflow.local](http://airflow.local) in your browser.  
    Default credentials:
    - Username: `airflow`
    - Password: `airflow`
 
-6. **Access pgAdmin**  
+7. **Access pgAdmin**  
    Open [http://pgadmin.local](http://pgadmin.local) in your browser.  
    Credentials from `.env`:
    - Email: `PGADMIN_DEFAULT_EMAIL`
    - Password: `PGADMIN_DEFAULT_PASSWORD`
 
-7. **Access MinIO**  
+8. **Access MinIO**  
    Open [http://minio.local](http://minio.local) in your browser.  
    Default credentials (or set in `.env`):
    - Username: `MINIO_ROOT_USER`
@@ -104,7 +105,7 @@ This is done by editing the **hosts file** in your operating system to map names
 ├── config/ # Configuration files for Airflow or services
 ├── dags/ # Airflow DAGs (workflows)
 ├── migrations/ # Database migration scripts
-│ └── init.sql # Initialization script for Postgres (used by docker postgres-init service)
+│ └── 000_init.sql # Initialization script for Postgres (used by docker postgres-init service)
 ├── nginx/
 │ └── conf.d/ # Nginx configuration files
 ├── plugins/ # Custom Airflow plugins
