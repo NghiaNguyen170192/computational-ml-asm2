@@ -1,0 +1,134 @@
+from airflow import DAG
+from airflow.operators.python import PythonOperator
+from datetime import datetime, timedelta
+import pandas as pd
+import os
+import pickle
+from io import BytesIO
+from utils import Utils  # <- your helper class for Postgres/MinIO
+
+# Config
+CHECKPOINT_FILE = "/opt/airflow/checkpoints/binance_eda_checkpoint.pkl"
+MINIO_CHECKPOINT_KEY = "binance/checkpoints/binance_eda_checkpoint.pkl"
+BUCKET_NAME = Utils.get_minio_bucket()
+
+default_args = {
+    "owner": "airflow",
+    "depends_on_past": False,
+    "email_on_failure": False,
+    "retries": 1,
+    "retry_delay": timedelta(minutes=5),
+}
+
+
+def fetch_pending_data(**context):
+    hook = Utils.get_postgres_hook()
+    query = "SELECT * FROM binance_klines WHERE status = 'pending' ORDER BY open_time LIMIT 1000;"
+    df = pd.read_sql(query, hook.get_conn())
+    if df.empty:
+        raise ValueError("No pending rows left. DAG will stop.")
+    context['ti'].xcom_push(key='batch', value=df.to_dict(orient="records"))
+
+
+def resume_from_checkpoint():
+    """Try to load checkpoint from local or MinIO"""
+    if os.path.exists(CHECKPOINT_FILE):
+        with open(CHECKPOINT_FILE, "rb") as f:
+            return pickle.load(f)
+
+    s3_hook = Utils.get_s3_hook()
+    if s3_hook.check_for_key(MINIO_CHECKPOINT_KEY, bucket_name=BUCKET_NAME):
+        obj = s3_hook.get_key(MINIO_CHECKPOINT_KEY, bucket_name=BUCKET_NAME)
+        with BytesIO(obj.get()["Body"].read()) as buffer:
+            return pickle.load(buffer)
+    return None
+
+
+def save_checkpoint(state):
+    """Save checkpoint both locally and to MinIO"""
+    with open(CHECKPOINT_FILE, "wb") as f:
+        pickle.dump(state, f)
+
+    s3_hook = Utils.get_s3_hook()
+    with open(CHECKPOINT_FILE, "rb") as f:
+        s3_hook.load_file(filename=CHECKPOINT_FILE,
+                          key=MINIO_CHECKPOINT_KEY,
+                          bucket_name=BUCKET_NAME,
+                          replace=True)
+
+
+def run_eda(**context):
+    records = context['ti'].xcom_pull(key='batch', task_ids='fetch_data')
+    df = pd.DataFrame(records)
+
+    # Try resume
+    state = resume_from_checkpoint()
+    if state:
+        print("Resuming from checkpoint...")
+        df = state
+
+    # Example feature engineering
+    df['log_return'] = (df['close'].astype(float) / df['open'].astype(float)).apply(
+        lambda x: pd.NA if x <= 0 else pd.Series([pd.np.log(x)])).fillna(0)
+    df['rolling_mean'] = df['close'].astype(
+        float).rolling(window=5, min_periods=1).mean()
+    df['volatility'] = df['close'].astype(
+        float).rolling(window=5, min_periods=1).std()
+
+    # Save checkpoint
+    save_checkpoint(df)
+
+    context['ti'].xcom_push(
+        key='eda_result', value=df.to_dict(orient="records"))
+
+
+def mark_processed(**context):
+    records = context['ti'].xcom_pull(key='batch', task_ids='fetch_data')
+    hook = Utils.get_postgres_hook()
+    ids = [(row['open_time'], row['symbol']) for row in records]
+
+    with hook.get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.executemany(
+                "UPDATE binance_klines SET status = 'processed' WHERE open_time = %s AND symbol = %s;",
+                ids
+            )
+        conn.commit()
+
+    # Clear checkpoint after success
+    if os.path.exists(CHECKPOINT_FILE):
+        os.remove(CHECKPOINT_FILE)
+    s3_hook = Utils.get_s3_hook()
+    s3_hook.delete_objects(bucket_name=BUCKET_NAME,
+                           keys=[MINIO_CHECKPOINT_KEY])
+
+
+with DAG(
+    "binance_eda_pipeline",
+    default_args=default_args,
+    description="EDA pipeline with resume/checkpoint for Binance klines",
+    schedule_interval="@hourly",
+    start_date=datetime(2023, 1, 1),
+    catchup=False,
+    max_active_runs=1
+) as dag:
+
+    fetch_data = PythonOperator(
+        task_id="fetch_data",
+        python_callable=fetch_pending_data,
+        provide_context=True
+    )
+
+    eda_task = PythonOperator(
+        task_id="run_eda",
+        python_callable=run_eda,
+        provide_context=True
+    )
+
+    mark_done = PythonOperator(
+        task_id="mark_processed",
+        python_callable=mark_processed,
+        provide_context=True
+    )
+
+    fetch_data >> eda_task >> mark_done
