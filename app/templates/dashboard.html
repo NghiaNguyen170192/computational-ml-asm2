@@ -75,7 +75,7 @@
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Days Ahead</label>
-                            <input type="number" class="form-control" id="daysAhead" value="7" min="1" max="30" required>
+                            <input type="number" class="form-control" id="daysAhead" value="7" min="1" max="10" required>
                         </div>
                         <div class="d-grid gap-2">
                             <button type="submit" class="btn btn-primary">
@@ -486,9 +486,9 @@ function displayLastRecordDetails(data) {
                     </div>
                     <div class="card-body">
                         <ul class="list-unstyled mb-0">
-                            <li><strong>Number of Trades:</strong> ${record.number_of_trades.toLocaleString()}</li>
+                            <li><strong>Number of Trades:</strong> ${record.number_of_trades === 'N/A' || record.number_of_trades === null ? 'N/A' : parseInt(record.number_of_trades).toLocaleString()}</li>
                             <li><strong>Trading Intensity:</strong> <span class="badge ${analysis.analysis_metrics.trading_intensity === 'High' ? 'bg-danger' : 'bg-warning'}">${analysis.analysis_metrics.trading_intensity}</span></li>
-                            <li><strong>Buy Ratio:</strong> ${record.taker_buy_ratio.toFixed(1)}%</li>
+                            <li><strong>Buy Ratio:</strong> ${record.taker_buy_ratio === 'N/A' || record.taker_buy_ratio === null ? 'N/A' : parseFloat(record.taker_buy_ratio).toFixed(1) + '%'}</li>
                             <li><strong>Buying Pressure:</strong> <span class="badge ${analysis.analysis_metrics.buying_pressure === 'High' ? 'bg-success' : 'bg-secondary'}">${analysis.analysis_metrics.buying_pressure}</span></li>
                         </ul>
                     </div>
@@ -507,25 +507,25 @@ function displayLastRecordDetails(data) {
                         <div class="row">
                             <div class="col-md-3">
                                 <div class="text-center p-3 border rounded">
-                                    <h5 class="text-primary">${record.volume.toLocaleString()}</h5>
+                                    <h5 class="text-primary">${record.volume === 'N/A' || record.volume === null ? 'N/A' : parseFloat(record.volume).toLocaleString()}</h5>
                                     <small class="text-muted">Total Volume (BTC)</small>
                                 </div>
                             </div>
                             <div class="col-md-3">
                                 <div class="text-center p-3 border rounded">
-                                    <h5 class="text-success">${record.taker_buy_base_volume.toLocaleString()}</h5>
+                                    <h5 class="text-success">${record.taker_buy_base_volume === 'N/A' || record.taker_buy_base_volume === null ? 'N/A' : parseFloat(record.taker_buy_base_volume).toLocaleString()}</h5>
                                     <small class="text-muted">Taker Buy Base Volume (BTC)</small>
                                 </div>
                             </div>
                             <div class="col-md-3">
                                 <div class="text-center p-3 border rounded">
-                                    <h5 class="text-info">${record.taker_buy_quote_asset_volume.toLocaleString()}</h5>
+                                    <h5 class="text-info">${record.taker_buy_quote_volume === 'N/A' || record.taker_buy_quote_volume === null ? 'N/A' : parseFloat(record.taker_buy_quote_volume).toLocaleString()}</h5>
                                     <small class="text-muted">Taker Buy Quote Volume (USDT)</small>
                                 </div>
                             </div>
                             <div class="col-md-3">
                                 <div class="text-center p-3 border rounded">
-                                    <h5 class="text-warning">${record.quote_asset_volume.toLocaleString()}</h5>
+                                    <h5 class="text-warning">${record.quote_asset_volume === 'N/A' || record.quote_asset_volume === null ? 'N/A' : parseFloat(record.quote_asset_volume).toLocaleString()}</h5>
                                     <small class="text-muted">Quote Asset Volume (USDT)</small>
                                 </div>
                             </div>
@@ -534,8 +534,8 @@ function displayLastRecordDetails(data) {
                             <div class="alert alert-info">
                                 <h6><i class="fas fa-info-circle me-2"></i>Volume Analysis:</h6>
                                 <ul class="mb-0">
-                                    <li><strong>Taker Buy Ratio:</strong> ${record.taker_buy_ratio.toFixed(1)}% of total volume was from buy orders</li>
-                                    <li><strong>Quote Volume Ratio:</strong> ${record.quote_volume_ratio.toFixed(1)}% ratio of quote to base volume</li>
+                                    <li><strong>Taker Buy Ratio:</strong> ${record.taker_buy_ratio === 'N/A' || record.taker_buy_ratio === null ? 'N/A' : parseFloat(record.taker_buy_ratio).toFixed(1) + '% of total volume was from buy orders'}</li>
+                                    <li><strong>Quote Volume Ratio:</strong> ${record.quote_volume_ratio === 'N/A' || record.quote_volume_ratio === null ? 'N/A' : parseFloat(record.quote_volume_ratio).toFixed(1) + '% ratio of quote to base volume'}</li>
                                     <li><strong>Volume Significance:</strong> <span class="badge ${analysis.analysis_metrics.volume_significance === 'High' ? 'bg-success' : 'bg-warning'}">${analysis.analysis_metrics.volume_significance}</span></li>
                                 </ul>
                             </div>
@@ -607,7 +607,7 @@ function displayPredictionResults(result) {
                     </div>
                     <div class="col-md-4">
                         <h6><i class="fas fa-chart-line me-2"></i>Price Predictions</h6>
-                        ${result.predictions.slice(0, 3).map(p => `
+                        ${result.predictions.map(p => `
                             <div class="prediction-item mb-2 p-2 border rounded">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <span class="fw-bold">${p.date}:</span>
@@ -621,14 +621,7 @@ function displayPredictionResults(result) {
                                 </div>` : ''}
                             </div>
                         `).join('')}
-                        ${result.predictions.length > 3 ? `
-                            <div class="text-center mt-2">
-                                <small class="text-muted">
-                                    <i class="fas fa-ellipsis-h me-1"></i>
-                                    ${result.predictions.length - 3} more days predicted
-                                </small>
-                            </div>
-                        ` : ''}
+                        
                         ${result.rmse ? `
                             <div class="mt-3 alert alert-info">
                                 <i class="fas fa-chart-bar me-2"></i>
@@ -638,7 +631,7 @@ function displayPredictionResults(result) {
                     </div>
                     <div class="col-md-4">
                         <h6><i class="fas fa-heart me-2"></i>Sentiment Analysis</h6>
-                        ${result.predictions.slice(0, 3).map(p => `
+                        ${result.predictions.map(p => `
                             <div class="sentiment-item mb-2 p-2 border rounded">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <span class="fw-bold">${p.date}:</span>
@@ -852,16 +845,16 @@ function displaySentimentAnalysis(predictions) {
                                 <!-- Trending Articles Driving Sentiment -->
                                 ${p.sentiment_analysis.news_sentiment.relevant_articles && p.sentiment_analysis.news_sentiment.relevant_articles.length > 0 ? `
                                     <div class="mt-3">
-                                        <small class="text-muted"><strong>📈 Articles Driving This Trend:</strong></small>
+                                        <small class="text-muted"><strong>📈 Articles Driving This Trend (Raw Evidence):</strong></small>
                                         <div class="mt-2">
-                                            ${p.sentiment_analysis.news_sentiment.relevant_articles.slice(0, 3).map(article => `
+                                            ${p.sentiment_analysis.news_sentiment.relevant_articles.slice(0, 5).map((article, idx) => `
                                                 <div class="card mb-2 border-${article.is_trending_driver ? 'primary' : 'secondary'}" style="font-size: 0.8rem;">
                                                     <div class="card-body p-2">
                                                         <div class="d-flex justify-content-between align-items-start">
                                                             <div class="flex-grow-1">
                                                                 <div class="d-flex justify-content-between align-items-center mb-1">
                                                                     <h6 class="card-title mb-0" style="font-size: 0.9rem;">
-                                                                        <a href="${article.url}" target="_blank" class="text-decoration-none">
+                                                                        <a href="${article.url}" target="_blank" rel="noopener" class="text-decoration-none">
                                                                             ${article.title}
                                                                         </a>
                                                                     </h6>
@@ -891,9 +884,19 @@ function displaySentimentAnalysis(predictions) {
                                                                     </div>
                                                                 ` : ''}
                                                                 
-                                                                <p class="card-text mt-1 mb-0" style="font-size: 0.75rem;">
+                                                                <p class="card-text mt-1 mb-2" style="font-size: 0.75rem;">
                                                                     ${article.excerpt}
                                                                 </p>
+                                                                
+                                                                <!-- Raw article text evidence (inline, collapsible) -->
+                                                                ${article.text ? `
+                                                                    <button class="btn btn-sm btn-outline-primary mb-1" type="button" onclick="toggleArticleText('art-${idx}-${p.date.replaceAll(/[^a-zA-Z0-9]/g,'')}')">
+                                                                        <i class=\"fas fa-book-open me-1\"></i>Read Full Text
+                                                                    </button>
+                                                                    <div id="art-${idx}-${p.date.replaceAll(/[^a-zA-Z0-9]/g,'')}" style="display:none;">
+                                                                        <pre class="mb-0" style="white-space: pre-wrap; font-size: 0.75rem;">${article.text}</pre>
+                                                                    </div>
+                                                                ` : ''}
                                                             </div>
                                                         </div>
                                                     </div>
@@ -964,6 +967,13 @@ function displaySentimentAnalysis(predictions) {
     document.getElementById('sentimentAnalysis').style.display = 'block';
 }
 
+// Toggle raw full-article text inline
+function toggleArticleText(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.style.display = (el.style.display === 'none' || el.style.display === '') ? 'block' : 'none';
+}
+
 async function updateChart(predictions = []) {
     await updateChartWithRange('all', predictions);
 }
@@ -1004,8 +1014,8 @@ async function updateChartWithRange(range, predictions = []) {
                 break;
             case 'all':
             default:
-                // All data - get daily data
-                limit = 500; // Daily resolution for all data
+                // All data - fetch entire series (no limit)
+                limit = null;
                 break;
         }
         

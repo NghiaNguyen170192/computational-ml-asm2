@@ -6,14 +6,17 @@ services:
     container_name: bitcoin-predictor
     ports:
       - "5500:5000"
+    env_file:
+      - .env
     environment:
-      - FLASK_APP=app.py
-      - FLASK_ENV=production
-      - DB_HOST=postgres
-      - DB_PORT=5432
-      - DB_NAME=airflow
-      - DB_USER=airflow
-      - DB_PASSWORD=airflow
+      # Override specific environment variables if needed
+      - FLASK_APP=${FLASK_APP:-app.py}
+      - FLASK_ENV=${FLASK_ENV:-production}
+      - DB_HOST=${DB_HOST:-postgres}
+      - DB_PORT=${DB_PORT:-5432}
+      - DB_NAME=${DB_NAME:-airflow}
+      - DB_USER=${DB_USER:-airflow}
+      - DB_PASSWORD=${DB_PASSWORD:-airflow}
     volumes:
       - ./models:/app/models
       - ./logs:/app/logs

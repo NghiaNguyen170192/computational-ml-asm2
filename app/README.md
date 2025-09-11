@@ -45,8 +45,11 @@ This will:
 cd orchestration
 docker-compose up -d
 
-# 2. Start Bitcoin predictor app
+# 2. Configure the app (optional)
 cd ../app
+cp .env.sample .env  # Copy and edit configuration if needed
+
+# 3. Start Bitcoin predictor app
 ./manage-app.sh start
 ```
 
@@ -136,6 +139,31 @@ cd app
                        │   (CSV File)     │
                        └──────────────────┘
 ```
+
+## ⚙️ Configuration
+
+The application uses environment variables for easy configuration management. All settings can be customized through `.env` files.
+
+### **Quick Configuration**
+```bash
+# Copy the sample configuration
+cp .env.sample .env
+
+# Edit configuration (optional)
+nano .env
+```
+
+### **Key Configuration Options**
+- **Database**: PostgreSQL connection settings
+- **Flask**: Application settings and security
+- **ML Models**: Training parameters and thresholds
+- **News**: Sentiment analysis settings
+- **Logging**: Log levels and output options
+
+### **Configuration Files**
+- `.env.sample` - Template with all options and documentation
+- `.env` - Your actual configuration (not committed to git)
+- `CONFIGURATION_GUIDE.md` - Detailed configuration guide
 
 ## 📋 Prerequisites
 

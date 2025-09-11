@@ -42,6 +42,10 @@ import pandas as pd
 import plotly
 import plotly.graph_objs as go
 import plotly.utils
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # =============================================================================
 # FLASK APPLICATION INITIALIZATION
@@ -581,13 +585,22 @@ def last_record_details():
         return jsonify({'error': 'Not logged in'}), 401
     
     try:
+        print("DEBUG: Starting last_record_details function")
+        
         # Get comprehensive last record details
+        print("DEBUG: Calling data_fetcher.get_last_record()")
         last_record = data_fetcher.get_last_record()
+        print(f"DEBUG: get_last_record() returned: {type(last_record)} - {last_record is not None}")
         
         if not last_record:
+            print("DEBUG: last_record is None or empty")
             return jsonify({'error': 'No Bitcoin data available'}), 400
         
+        print("DEBUG: last_record retrieved successfully, building analysis")
+        print(f"DEBUG: last_record keys: {list(last_record.keys()) if isinstance(last_record, dict) else 'Not a dict'}")
+        
         # Add additional context for lecturer understanding
+        print("DEBUG: Building database_evidence section")
         record_analysis = {
             'database_evidence': {
                 'connection_status': 'SUCCESS',
@@ -596,47 +609,92 @@ def last_record_details():
                 'record_retrieved': True,
                 'timestamp': last_record['record_timestamp']
             },
-            'trading_data': {
-                'time_period': {
-                    'open_time': last_record['open_time'],
-                    'close_time': last_record['close_time'],
-                    'duration_minutes': '1 minute (standard kline interval)'
-                },
-                'price_movement': {
-                    'open_price': last_record['open'],
-                    'high_price': last_record['high'],
-                    'low_price': last_record['low'],
-                    'close_price': last_record['close'],
-                    'price_change': last_record['price_change'],
-                    'price_change_percentage': last_record['price_change_pct']
-                },
-                'volume_metrics': {
-                    'total_volume_btc': last_record['volume'],
-                    'quote_asset_volume_usdt': last_record['quote_asset_volume'],
-                    'taker_buy_base_volume_btc': last_record['taker_buy_base_volume'],
-                    'taker_buy_quote_volume_usdt': last_record['taker_buy_quote_volume']
-                },
-                'trading_activity': {
-                    'number_of_trades': last_record['number_of_trades'],
-                    'taker_buy_ratio_percentage': last_record['taker_buy_ratio'],
-                    'quote_volume_ratio_percentage': last_record['quote_volume_ratio']
-                }
-            },
-            'analysis_metrics': {
-                'buying_pressure': 'High' if last_record['taker_buy_ratio'] > 50 else 'Low',
-                'trading_intensity': 'High' if last_record['number_of_trades'] > 1000 else 'Moderate',
-                'price_volatility': 'High' if abs(last_record['price_change_pct']) > 2 else 'Low',
-                'volume_significance': 'High' if last_record['volume'] > 100 else 'Moderate'
-            },
-            'lecturer_notes': {
-                'data_source': 'Binance API via Airflow DAG',
-                'database': 'PostgreSQL (orchestration system)',
-                'table_structure': 'Standard Binance klines format',
-                'update_frequency': 'Every minute (real-time)',
-                'data_quality': 'High - includes all trading metrics'
-            }
         }
         
+        print("DEBUG: Building trading_data section")
+        record_analysis['trading_data'] = {
+            'time_period': {
+                'open_time': last_record['open_time'],
+                'close_time': last_record['close_time'],
+                'duration_minutes': '1 minute (standard kline interval)'
+            },
+        }
+        
+        print("DEBUG: Building price_movement section")
+        record_analysis['trading_data']['price_movement'] = {
+            'open_price': last_record['open'],
+            'high_price': last_record['high'],
+            'low_price': last_record['low'],
+            'close_price': last_record['close'],
+            'price_change': last_record['price_change'],
+            'price_change_percentage': last_record['price_change_pct']
+        }
+        
+        print("DEBUG: Building volume_metrics section")
+        record_analysis['trading_data']['volume_metrics'] = {
+            'total_volume_btc': last_record['volume'],
+            'quote_asset_volume_usdt': last_record['quote_asset_volume'],
+            'taker_buy_base_volume_btc': last_record['taker_buy_base_volume'],
+            'taker_buy_quote_volume_usdt': last_record['taker_buy_quote_volume']
+        }
+        
+        print("DEBUG: Building trading_activity section")
+        record_analysis['trading_data']['trading_activity'] = {
+            'number_of_trades': last_record['number_of_trades'],
+            'taker_buy_ratio_percentage': last_record['taker_buy_ratio'],
+            'quote_volume_ratio_percentage': last_record['quote_volume_ratio']
+        }
+        
+        print("DEBUG: Building analysis_metrics section")
+        # Check each value before comparison
+        taker_buy_ratio = last_record.get('taker_buy_ratio', 0)
+        number_of_trades = last_record.get('number_of_trades', 0)
+        price_change_pct = last_record.get('price_change_pct', 0)
+        volume = last_record.get('volume', 0)
+        
+        print(f"DEBUG: taker_buy_ratio type: {type(taker_buy_ratio)}, value: {taker_buy_ratio}")
+        print(f"DEBUG: number_of_trades type: {type(number_of_trades)}, value: {number_of_trades}")
+        print(f"DEBUG: price_change_pct type: {type(price_change_pct)}, value: {price_change_pct}")
+        print(f"DEBUG: volume type: {type(volume)}, value: {volume}")
+        
+        # Convert to appropriate types for comparison
+        try:
+            taker_buy_ratio_num = float(taker_buy_ratio) if taker_buy_ratio != 'N/A' else 0
+        except (ValueError, TypeError):
+            taker_buy_ratio_num = 0
+            
+        try:
+            number_of_trades_num = int(number_of_trades) if number_of_trades != 'N/A' else 0
+        except (ValueError, TypeError):
+            number_of_trades_num = 0
+            
+        try:
+            price_change_pct_num = float(price_change_pct) if price_change_pct != 'N/A' else 0
+        except (ValueError, TypeError):
+            price_change_pct_num = 0
+            
+        try:
+            volume_num = float(volume) if volume != 'N/A' else 0
+        except (ValueError, TypeError):
+            volume_num = 0
+        
+        record_analysis['analysis_metrics'] = {
+            'buying_pressure': 'High' if taker_buy_ratio_num > 50 else 'Low',
+            'trading_intensity': 'High' if number_of_trades_num > 1000 else 'Moderate',
+            'price_volatility': 'High' if abs(price_change_pct_num) > 2 else 'Low',
+            'volume_significance': 'High' if volume_num > 100 else 'Moderate'
+        }
+        
+        print("DEBUG: Building lecturer_notes section")
+        record_analysis['lecturer_notes'] = {
+            'data_source': 'Binance API via Airflow DAG',
+            'database': 'PostgreSQL (orchestration system)',
+            'table_structure': 'Standard Binance klines format',
+            'update_frequency': 'Every minute (real-time)',
+            'data_quality': 'High - includes all trading metrics'
+        }
+        
+        print("DEBUG: Building final response")
         return jsonify({
             'status': 'success',
             'last_record': last_record,
@@ -648,8 +706,21 @@ def last_record_details():
         import traceback
         error_details = traceback.format_exc()
         print(f"ERROR in last_record_details: {str(e)}")
+        print(f"ERROR TYPE: {type(e).__name__}")
         print(f"FULL TRACEBACK:\n{error_details}")
-        return jsonify({'error': str(e)}), 500
+        
+        # Enhanced error response with more details
+        return jsonify({
+            'error': str(e),
+            'error_type': type(e).__name__,
+            'traceback': error_details,
+            'debug_info': {
+                'function': 'last_record_details',
+                'line_causing_error': 'See traceback for exact line',
+                'last_record_type': str(type(last_record)) if 'last_record' in locals() else 'Not defined',
+                'last_record_keys': list(last_record.keys()) if 'last_record' in locals() and isinstance(last_record, dict) else 'Not a dict or not defined'
+            }
+        }), 500
 
 @app.route('/prediction_logs')
 def prediction_logs():

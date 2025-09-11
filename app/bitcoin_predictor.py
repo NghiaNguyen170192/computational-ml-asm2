@@ -1328,7 +1328,7 @@ class BitcoinPredictor:
     
     def _load_recent_news_evidence(self, pred_date: pd.Timestamp) -> pd.DataFrame:
         """
-        Load recent news articles from CSV file for evidence
+        Load recent news articles from PostgreSQL crypto_news table for evidence
         
         Args:
             pred_date: Prediction date
@@ -1338,44 +1338,107 @@ class BitcoinPredictor:
         """
         try:
             import pandas as pd
+            import psycopg2
             from datetime import timedelta
             
-            # Load news data from CSV
-            news_file = os.path.join(self.model_dir, "..", "data", "cryptonews-2022-2023.csv")
-            if not os.path.exists(news_file):
+            # Database configuration (use same as data fetcher)
+            db_config = {
+                'host': os.getenv('DB_HOST', 'postgres'),
+                'port': os.getenv('DB_PORT', '5432'),
+                'database': os.getenv('DB_NAME', 'airflow'),
+                'user': os.getenv('DB_USER', 'airflow'),
+                'password': os.getenv('DB_PASSWORD', 'airflow')
+            }
+            
+            # Connect to database
+            conn = psycopg2.connect(**db_config)
+            cursor = conn.cursor()
+            
+            # Check if crypto_news table exists
+            cursor.execute("""
+                SELECT EXISTS (
+                    SELECT FROM information_schema.tables 
+                    WHERE table_name = 'crypto_news'
+                );
+            """)
+            table_exists = cursor.fetchone()[0]
+            
+            if not table_exists:
+                self.logger.warning("crypto_news table not found")
+                cursor.close()
+                conn.close()
                 return None
             
             # Load and filter recent news (last 30 days)
             start_date = pred_date - timedelta(days=30)
             end_date = pred_date + timedelta(days=7)  # Include some future dates for context
             
-            news_df = pd.read_csv(news_file)
-            news_df['date'] = pd.to_datetime(news_df['date'])
+            cursor.execute("""
+                SELECT id, date, sentiment, source, subject, text, title, url
+                FROM crypto_news 
+                WHERE date >= %s AND date <= %s
+                ORDER BY date DESC
+            """, (start_date, end_date))
             
-            # Filter for recent news
-            recent_news = news_df[
-                (news_df['date'] >= start_date) & 
-                (news_df['date'] <= end_date)
-            ].copy()
+            # Fetch results
+            columns = ['id', 'date', 'sentiment', 'source', 'subject', 'text', 'title', 'url']
+            rows = cursor.fetchall()
             
-            if recent_news.empty:
+            cursor.close()
+            conn.close()
+            
+            if not rows:
                 return None
             
-            # Parse sentiment data
-            recent_news['sentiment_parsed'] = recent_news['sentiment'].apply(self._parse_sentiment_string)
-            recent_news['sentiment_class'] = recent_news['sentiment_parsed'].apply(lambda x: x.get('class', 'neutral'))
-            recent_news['sentiment_polarity'] = recent_news['sentiment_parsed'].apply(lambda x: x.get('polarity', 0.0))
-            recent_news['sentiment_subjectivity'] = recent_news['sentiment_parsed'].apply(lambda x: x.get('subjectivity', 0.5))
+            # Create DataFrame
+            recent_news = pd.DataFrame(rows, columns=columns)
+            recent_news['date'] = pd.to_datetime(recent_news['date'])
+            
+            # Parse sentiment data (JSONB from PostgreSQL)
+            recent_news['sentiment_parsed'] = recent_news['sentiment'].apply(self._parse_sentiment_data)
+            recent_news['sentiment_class'] = recent_news['sentiment_parsed'].apply(lambda x: x.get('class', 'neutral') if x else 'neutral')
+            recent_news['sentiment_polarity'] = recent_news['sentiment_parsed'].apply(lambda x: x.get('polarity', 0.0) if x else 0.0)
+            recent_news['sentiment_subjectivity'] = recent_news['sentiment_parsed'].apply(lambda x: x.get('subjectivity', 0.5) if x else 0.5)
             
             return recent_news.sort_values('date', ascending=False)
             
         except Exception as e:
-            self.logger.error(f"Error loading news evidence: {e}")
+            self.logger.error(f"Error loading news evidence from database: {e}")
             return None
+    
+    
+    def _parse_sentiment_data(self, sentiment_data) -> Dict:
+        """
+        Parse sentiment data from PostgreSQL JSONB or CSV string
+        
+        Args:
+            sentiment_data: JSONB data from PostgreSQL or JSON string from CSV
+            
+        Returns:
+            Dictionary with sentiment data
+        """
+        try:
+            if pd.isna(sentiment_data) or sentiment_data is None:
+                return {'class': 'neutral', 'polarity': 0.0, 'subjectivity': 0.5}
+            
+            # If it's already a dict (from JSONB), return as is
+            if isinstance(sentiment_data, dict):
+                return sentiment_data
+            
+            # If it's a string, try to parse it
+            if isinstance(sentiment_data, str):
+                # Handle both single and double quotes
+                sentiment_str = sentiment_data.replace("'", '"')
+                return json.loads(sentiment_str)
+            
+            return {'class': 'neutral', 'polarity': 0.0, 'subjectivity': 0.5}
+        except Exception as e:
+            self.logger.warning(f"Failed to parse sentiment data: {e}")
+            return {'class': 'neutral', 'polarity': 0.0, 'subjectivity': 0.5}
     
     def _parse_sentiment_string(self, sentiment_str: str) -> Dict:
         """
-        Parse sentiment string from CSV into dictionary
+        Parse sentiment string from CSV into dictionary (legacy method)
         
         Args:
             sentiment_str: String like "{'class': 'positive', 'polarity': 0.5, 'subjectivity': 0.6}"

@@ -4,7 +4,7 @@ from airflow import DAG
 from airflow.operators.python import PythonOperator
 from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 from binance_plugin import fetch_binance_klines, save_df_to_minio, upsert_to_postgres, BUCKET_NAME
-
+import io
 
 def dag_binance_daily_task(**kwargs):
     s3_hook = S3Hook(aws_conn_id='minio_conn')
@@ -36,7 +36,7 @@ def dag_binance_daily_task(**kwargs):
         print(f"{object_key} exists — appending new data.")
         existing_obj = s3_hook.read_key(
             key=object_key, bucket_name=BUCKET_NAME)
-        df_existing = pd.read_csv(pd.compat.StringIO(existing_obj))
+        df_existing = pd.read_csv(io.StringIO(existing_obj))
         df_combined = pd.concat([df_existing, df_new], ignore_index=True)
         df_combined.drop_duplicates(subset=['open_time'], inplace=True)
     else:

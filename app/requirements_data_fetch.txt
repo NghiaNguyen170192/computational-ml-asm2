@@ -1,4 +1,0 @@
-# Additional requirements for data fetching scripts
-requests==2.31.0
-pandas==1.5.3
-psycopg2-binary==2.9.7

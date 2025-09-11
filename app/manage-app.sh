@@ -12,10 +12,16 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-# App configuration
-APP_NAME="bitcoin-predictor"
-APP_PORT="5500"
+# Load environment variables from .env file if it exists
+if [ -f .env ]; then
+    export $(grep -v '^#' .env | xargs)
+fi
+
+# App configuration (with environment variable fallbacks)
+APP_NAME="${CONTAINER_NAME:-bitcoin-predictor}"
+APP_PORT="${APP_PORT:-5500}"
 APP_URL="http://localhost:${APP_PORT}"
+DOCKER_NETWORK="${DOCKER_NETWORK:-orchestration_nginx-network}"
 
 # Function to print colored output
 print_status() {
@@ -46,7 +52,7 @@ check_docker() {
 check_orchestration() {
     print_status "Checking if orchestration system is running..."
     
-    if docker network ls | grep -q "orchestration_nginx-network"; then
+    if docker network ls | grep -q "${DOCKER_NETWORK}"; then
         print_success "Orchestration network found"
     else
         print_warning "Orchestration network not found. Make sure orchestration is running."

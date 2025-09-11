@@ -136,11 +136,11 @@ class BitcoinDataFetcher:
     
     def fetch_news_data(self) -> pd.DataFrame:
         """
-        Fetch and process crypto news data from CSV file with advanced categorization
+        Fetch and process crypto news data from PostgreSQL crypto_news table with advanced categorization
         
         This function:
-        1. Loads news data from CSV file
-        2. Parses sentiment information from JSON strings
+        1. Loads news data from PostgreSQL crypto_news table
+        2. Parses sentiment information from JSONB fields
         3. Categorizes news by impact type (regulatory, market, technology, etc.)
         4. Filters for Bitcoin-related content
         5. Creates time series features for Prophet integration
@@ -149,33 +149,78 @@ class BitcoinDataFetcher:
             DataFrame with processed news data including categories and impact scores
         """
         try:
-            # Check if news file exists
-            if not os.path.exists(self.news_file):
-                self.logger.warning(f"News file not found: {self.news_file}")
+            # Connect to database
+            conn = psycopg2.connect(**self.db_config)
+            cursor = conn.cursor()
+            
+            # Check if crypto_news table exists
+            cursor.execute("""
+                SELECT EXISTS (
+                    SELECT FROM information_schema.tables 
+                    WHERE table_name = 'crypto_news'
+                );
+            """)
+            table_exists = cursor.fetchone()[0]
+            
+            if not table_exists:
+                self.logger.warning("crypto_news table not found in database")
+                cursor.close()
+                conn.close()
                 return pd.DataFrame()
             
-            # Load CSV data
-            self.logger.info("Loading news data from CSV file...")
-            df = pd.read_csv(self.news_file)
+            # Load news data from PostgreSQL table
+            self.logger.info("Loading news data from PostgreSQL crypto_news table...")
+            cursor.execute("""
+                SELECT id, date, sentiment, source, subject, text, title, url
+                FROM crypto_news 
+                ORDER BY date DESC
+            """)
+            
+            # Fetch all results
+            columns = ['id', 'date', 'sentiment', 'source', 'subject', 'text', 'title', 'url']
+            rows = cursor.fetchall()
+            
+            if not rows:
+                self.logger.warning("No news data found in crypto_news table")
+                cursor.close()
+                conn.close()
+                return pd.DataFrame()
+            
+            # Create DataFrame
+            df = pd.DataFrame(rows, columns=columns)
             df['date'] = pd.to_datetime(df['date'])
             
-            # Parse sentiment JSON strings
-            def parse_sentiment(sentiment_str):
+            self.logger.info(f"Loaded {len(df)} news articles from database")
+            
+            cursor.close()
+            conn.close()
+            
+            # Parse sentiment JSONB data from PostgreSQL
+            def parse_sentiment(sentiment_data):
                 """
-                Parse sentiment JSON string and extract sentiment metrics
+                Parse sentiment JSONB data from PostgreSQL and extract sentiment metrics
                 
                 Args:
-                    sentiment_str: JSON string containing sentiment data
+                    sentiment_data: JSONB data from PostgreSQL (already parsed as dict)
                     
                 Returns:
                     Dictionary with parsed sentiment data or None if parsing fails
                 """
                 try:
-                    if pd.isna(sentiment_str):
+                    if pd.isna(sentiment_data) or sentiment_data is None:
                         return None
-                    # Replace single quotes with double quotes for valid JSON
-                    sentiment_dict = json.loads(sentiment_str.replace("'", '"'))
-                    return sentiment_dict
+                    
+                    # If it's already a dict (from JSONB), return as is
+                    if isinstance(sentiment_data, dict):
+                        return sentiment_data
+                    
+                    # If it's a string, try to parse it
+                    if isinstance(sentiment_data, str):
+                        # Handle both single and double quotes
+                        sentiment_str = sentiment_data.replace("'", '"')
+                        return json.loads(sentiment_str)
+                    
+                    return None
                 except Exception as e:
                     self.logger.warning(f"Failed to parse sentiment: {e}")
                     return None
@@ -334,7 +379,7 @@ class BitcoinDataFetcher:
             return daily_news
             
         except Exception as e:
-            self.logger.error(f"Failed to fetch news data: {e}")
+            self.logger.error(f"Error fetching news data from database: {e}")
             return pd.DataFrame()
     
     def get_available_date_range(self) -> Tuple[str, str]:
@@ -598,6 +643,14 @@ class BitcoinDataFetcher:
                 except (TypeError, ZeroDivisionError):
                     quote_volume_ratio = 0.0
                 
+                # Ensure available_columns is defined and is a list
+                if 'available_columns' not in locals():
+                    available_columns = []
+                
+                # Convert to list if it's not already
+                if not isinstance(available_columns, list):
+                    available_columns = list(available_columns) if available_columns else []
+                
                 return {
                     # Basic record information
                     'open_time': open_time.strftime('%Y-%m-%d %H:%M:%S') if isinstance(open_time, datetime) else str(open_time),
@@ -634,8 +687,8 @@ class BitcoinDataFetcher:
                         'table_name': 'binance_klines',
                         'available_columns': available_columns,
                         'query_executed': query,
-                        'total_records': count_result[0],
-                        'btc_records': count_result[1]
+                        'total_records': count_result[0] if count_result else 0,
+                        'btc_records': count_result[1] if count_result and len(count_result) > 1 else 0
                     }
                 }
             
