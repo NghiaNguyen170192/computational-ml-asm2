@@ -54,7 +54,7 @@ All detailed documentation is available in the `documents/` folder:
 - **RUBRIC_EVALUATION.md**: Rubric compliance analysis
 - **ACADEMIC_REPORT.md**: Detailed academic report
 
-## 🚀 Quick Start
+## 📺 Screenshots
 
 ![Bitcoin Chart](/app/asset-images/Bitcoin%20Chart.png)
 
@@ -68,7 +68,7 @@ All detailed documentation is available in the `documents/` folder:
 
 ![Market Sentiment Analysis 3](/app/asset-images/Market%20Sentiment%20Analysis-3.png)
 
-
+## 🚀 Quick Start
 
 ### **Option 1: One-Command Startup (Recommended)**
 
