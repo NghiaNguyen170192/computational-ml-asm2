@@ -1,10 +1,56 @@
 # Bitcoin Price Predictor - RMIT ML Course
 
-## 🎓 **HD Level Implementation**
+## 📋 Table of Contents
+
+- [🎓 Goal](#-goal)
+  - [🏆 Key Achievements](#-key-achievements)
+  - [📊 System Performance Metrics](#-system-performance-metrics)
+- [📁 Project Structure](#-project-structure)
+- [📚 Documentation](#-documentation)
+- [📺 Screenshots](#-screenshots)
+- [🚀 Quick Start](#-quick-start)
+  - [Option 1: One-Command Startup (Recommended)](#option-1-one-command-startup-recommended)
+  - [Option 2: Manual Step-by-Step](#option-2-manual-step-by-step)
+- [🌐 Access the Application](#-access-the-application)
+  - [Login Credentials](#login-credentials)
+- [🔄 App Management](#-app-management)
+  - [Using the Management Script](#using-the-management-script)
+  - [When You Make Changes](#when-you-make-changes)
+- [🏗️ System Architecture](#️-system-architecture)
+  - [Quick Configuration](#quick-configuration)
+  - [Key Configuration Options](#key-configuration-options)
+  - [Configuration Files](#configuration-files)
+- [⚙️ Configuration](#️-configuration)
+- [📋 Prerequisites](#-prerequisites)
+- [🛠️ Features](#️-features)
+  - [🤖 Why XGBoost and LightGBM?](#-why-xgboost-and-lightgbm)
+- [🔧 Configuration](#-configuration)
+  - [Environment Variables](#environment-variables)
+  - [Docker Services](#docker-services)
+- [📊 Data Sources](#-data-sources)
+  - [1. Bitcoin Price Data (binance_klines table)](#1-bitcoin-price-data-binance_klines-table)
+  - [2. News Data (PostgreSQL: crypto_news table)](#2-news-data-postgresql-crypto_news-table)
+- [🎯 Usage](#-usage)
+  - [Making Predictions](#making-predictions)
+  - [Chart Time Ranges](#chart-time-ranges)
+  - [Model Management](#model-management)
+- [🤖 Machine Learning Models & Performance](#-machine-learning-models--performance)
+  - [Primary Model: Facebook Prophet with News Sentiment Integration](#primary-model-facebook-prophet-with-news-sentiment-integration)
+- [🐳 Docker Commands](#-docker-commands)
+- [🔍 Troubleshooting](#-troubleshooting)
+- [🏭 Production Readiness & System Robustness](#-production-readiness--system-robustness)
+- [🎓 Assignment Requirements Compliance](#-assignment-requirements-compliance)
+- [📚 Technical Details](#-technical-details)
+- [🤝 Support](#-support)
+- [📄 License](#-license)
+
+---
+
+## 🎓 **GOAL**
 
 A Bitcoin price prediction system that uses multiple ML models and real-time data. This system integrates Prophet, XGBoost, LightGBM, and statistical models with news sentiment analysis to provide Bitcoin price forecasts.
 
-### **🏆 Key Academic Achievements**
+### **🏆 Key Achievements**
 - **Multi-Model Ensemble**: Prophet, XGBoost, LightGBM, and Statistical models
 - **High Accuracy**: RMSE $2,847, R² 0.89, Directional Accuracy 78%
 - **Production Ready**: Error handling, logging, and monitoring
@@ -170,12 +216,12 @@ cd app
 ## 🏗️ System Architecture
 
 ```
-┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
-│   Orchestration │    │   PostgreSQL     │    │   Web App       │
-│   (Airflow)     │───▶│   Database       │◀───│   (Docker)      │
-│                 │    │   - binance_klines│   │                 │
-└─────────────────┘    │   - crypto_news  │    └─────────────────┘
-                       └──────────────────┘
+┌─────────────────┐    ┌────────────────────┐    ┌─────────────────┐
+│   Orchestration │    │   PostgreSQL       │    │   Web App       │
+│   (Airflow)     │───▶│   Database         │◀───│   (Docker)      │
+│                 │    │   - binance_klines │    │                 │
+└─────────────────┘    │   - crypto_news    │    └─────────────────┘
+                       └────────────────────┘
                                 ▲
                                 │
                        ┌──────────────────┐
