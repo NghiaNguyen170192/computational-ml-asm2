@@ -416,19 +416,19 @@ function displayLastRecordDetails(data) {
                 </div>
             </div>
             
-            <!-- Lecturer Notes Section -->
+            <!-- Notes Section -->
             <div class="col-md-6">
                 <div class="card mb-3">
                     <div class="card-header bg-info text-white">
-                        <h6 class="mb-0"><i class="fas fa-graduation-cap me-2"></i>Lecturer Notes</h6>
+                        <h6 class="mb-0"><i class="fas fa-graduation-cap me-2"></i>Notes</h6>
                     </div>
                     <div class="card-body">
                         <ul class="list-unstyled mb-0">
-                            <li><strong>Data Source:</strong> ${analysis.lecturer_notes.data_source}</li>
-                            <li><strong>Database:</strong> ${analysis.lecturer_notes.database}</li>
-                            <li><strong>Table Structure:</strong> ${analysis.lecturer_notes.table_structure}</li>
-                            <li><strong>Update Frequency:</strong> ${analysis.lecturer_notes.update_frequency}</li>
-                            <li><strong>Data Quality:</strong> <span class="text-success">${analysis.lecturer_notes.data_quality}</span></li>
+                            <li><strong>Data Source:</strong> ${analysis.system_info.data_source}</li>
+                            <li><strong>Database:</strong> ${analysis.system_info.database}</li>
+                            <li><strong>Table Structure:</strong> ${analysis.system_info.table_structure}</li>
+                            <li><strong>Update Frequency:</strong> ${analysis.system_info.update_frequency}</li>
+                            <li><strong>Data Quality:</strong> <span class="text-success">${analysis.system_info.data_quality}</span></li>
                         </ul>
                     </div>
                 </div>
@@ -501,7 +501,7 @@ function displayLastRecordDetails(data) {
             <div class="col-md-12">
                 <div class="card mb-3">
                     <div class="card-header bg-secondary text-white">
-                        <h6 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Volume Metrics (Key Evidence for Lecturer)</h6>
+                        <h6 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Volume Metrics (Key Evidence)</h6>
                     </div>
                     <div class="card-body">
                         <div class="row">
@@ -653,7 +653,7 @@ function displayPredictionResults(result) {
                     </div>
                 </div>
                 
-                <!-- Enhanced prediction details -->
+                <!-- Prediction details -->
                 <div class="row mt-3">
                     <div class="col-12">
                         <h6><i class="fas fa-list me-2"></i>Detailed Predictions</h6>
@@ -1029,7 +1029,7 @@ async function updateChartWithRange(range, predictions = []) {
         const result = await response.json();
         
         if (response.ok && result && result.dates && result.prices) {
-            // Create enhanced historical price trace with hover information
+            // Create historical price trace with hover information
             const trace1 = {
                 x: result.dates,
                 y: result.prices,
@@ -1046,7 +1046,7 @@ async function updateChartWithRange(range, predictions = []) {
             
             const traces = [trace1];
             
-            // Add predictions with enhanced hover information
+            // Add predictions with hover information
             if (predictions.length > 0) {
                 const trace2 = {
                     x: predictions.map(p => p.date),
@@ -1102,7 +1102,7 @@ async function updateChartWithRange(range, predictions = []) {
                 }
             }
             
-            // Enhanced layout with better formatting
+            // Layout with better formatting
             const layout = {
                 title: {
                     text: `Bitcoin (BTC) Price - ${range.toUpperCase()}`,

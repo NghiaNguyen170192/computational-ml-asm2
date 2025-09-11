@@ -13,7 +13,7 @@ import warnings
 warnings.filterwarnings('ignore')
 
 # Import comprehensive logger
-from comprehensive_logger import ComprehensiveLogger
+from .comprehensive_logger import ComprehensiveLogger
 
 # Import gradient boosting models for enhanced predictions
 try:
@@ -786,7 +786,7 @@ class BitcoinPredictor:
         """
         Train an advanced fallback model using statistical methods when Prophet is not available
         
-        This method implements a sophisticated time series model that includes:
+        This method implements a time series model that includes:
         1. Log-transformed price analysis for better trend detection
         2. Linear trend fitting with regularization
         3. Seasonal pattern detection (weekly and monthly)

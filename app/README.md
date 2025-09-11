@@ -1,13 +1,13 @@
 # Bitcoin Price Predictor - RMIT ML Course
 
-## 🎓 **Academic Excellence - HD Level Implementation**
+## 🎓 **HD Level Implementation**
 
-A comprehensive, production-ready Bitcoin price prediction system that demonstrates advanced machine learning engineering practices for academic excellence. This system integrates multiple ML models, real-time news sentiment analysis, and production-ready software engineering to provide accurate Bitcoin price forecasts with confidence intervals.
+A Bitcoin price prediction system that uses multiple ML models and real-time data. This system integrates Prophet, XGBoost, LightGBM, and statistical models with news sentiment analysis to provide Bitcoin price forecasts.
 
 ### **🏆 Key Academic Achievements**
 - **Multi-Model Ensemble**: Prophet, XGBoost, LightGBM, and Statistical models
 - **High Accuracy**: RMSE $2,847, R² 0.89, Directional Accuracy 78%
-- **Production Ready**: Comprehensive error handling, logging, and monitoring
+- **Production Ready**: Error handling, logging, and monitoring
 - **User Friendly**: Intuitive web interface for non-technical users
 - **Academic Rigor**: Thorough analysis and critical evaluation
 
@@ -20,11 +20,55 @@ A comprehensive, production-ready Bitcoin price prediction system that demonstra
 | R² | 0.89 | 0.85 | 0.84 | 0.85 | 0.72 |
 | Directional Accuracy | 78% | 74% | 73% | 74% | 65% |
 
+## 📁 Project Structure
+
+```
+app/
+├── src/                    # Source code
+│   ├── app.py             # Flask web application
+│   ├── bitcoin_data_fetcher.py
+│   ├── bitcoin_predictor.py
+│   ├── comprehensive_logger.py
+│   └── temp_fetch_news.py
+├── templates/             # HTML templates
+├── static/               # CSS/JS assets
+├── models/               # Trained ML models
+├── logs/                 # Application logs
+├── documents/            # Documentation files
+│   ├── SYSTEM_ARCHITECTURE.md
+│   ├── CONFIGURATION_GUIDE.md
+│   ├── HD_SUBMISSION_SUMMARY.md
+│   ├── RUBRIC_EVALUATION.md
+│   └── ACADEMIC_REPORT.md
+├── data/                 # Data files
+└── README.md            # This file
+```
+
+## 📚 Documentation
+
+All detailed documentation is available in the `documents/` folder:
+
+- **SYSTEM_ARCHITECTURE.md**: Complete system design and architecture
+- **CONFIGURATION_GUIDE.md**: Setup and configuration instructions
+- **HD_SUBMISSION_SUMMARY.md**: Academic submission summary
+- **RUBRIC_EVALUATION.md**: Rubric compliance analysis
+- **ACADEMIC_REPORT.md**: Detailed academic report
+
 ## 🚀 Quick Start
+
+![Bitcoin Chart](/app/asset-images/Bitcoin%20Chart.png)
 
 ![Bitcoin Price Prediction Results](/app/asset-images/Bitcoin%20Price%20Prediction%20Results.png)
 
 ![Market Sentiment Analysis](/app/asset-images/Market%20Sentiment%20Analysis.png)
+
+![Market Sentiment Analysis 1](/app/asset-images/Market%20Sentiment%20Analysis-1.png)
+
+![Market Sentiment Analysis 2](/app/asset-images/Market%20Sentiment%20Analysis-2.png)
+
+![Market Sentiment Analysis 3](/app/asset-images/Market%20Sentiment%20Analysis-3.png)
+
+
 
 ### **Option 1: One-Command Startup (Recommended)**
 
@@ -173,7 +217,7 @@ nano .env
 ## 🛠️ Features
 
 - **Real-time Data**: Connects to PostgreSQL database populated by orchestration system
-- **News Sentiment Analysis**: Integrates crypto news sentiment for enhanced predictions
+- **News Sentiment Analysis**: Integrates crypto news sentiment for better predictions
 - **Advanced ML Models**: Uses Facebook Prophet for time series forecasting with fallback models
 - **Interactive UI**: Modern web interface with real-time charts and confidence intervals
 - **Model Evaluation**: Comprehensive metrics including RMSE, MAE, and MAPE
@@ -287,7 +331,7 @@ Prophet(
 
 ### **Fallback Model: Advanced Statistical Ensemble**
 
-When Prophet is unavailable, the system uses a sophisticated fallback model:
+When Prophet is unavailable, the system uses a fallback model:
 
 #### **Components:**
 1. **Trend Analysis**: Ridge regression with log-transformed prices
@@ -506,7 +550,7 @@ If you get port conflicts:
 
 ## 🏭 Production Readiness & System Robustness
 
-### **System Design Excellence**
+### **System Design**
 
 #### **1. Usability & User Experience**
 - **Intuitive Interface**: Clean, modern web interface with clear workflows
@@ -555,7 +599,7 @@ If you get port conflicts:
 - **Connection Pooling**: Efficient database connection management
 - **Timeout Handling**: Proper timeout configuration for all operations
 
-### **Machine Learning Excellence**
+### **Machine Learning Implementation**
 
 #### **1. Algorithm Appropriateness**
 - **Time Series Specialization**: Prophet specifically designed for time series forecasting

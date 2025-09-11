@@ -136,7 +136,7 @@ class BitcoinDataFetcher:
     
     def fetch_news_data(self) -> pd.DataFrame:
         """
-        Fetch and process crypto news data from PostgreSQL crypto_news table with advanced categorization
+        Fetch and process crypto news data from PostgreSQL crypto_news table
         
         This function:
         1. Loads news data from PostgreSQL crypto_news table
@@ -325,7 +325,7 @@ class BitcoinDataFetcher:
             # Calculate impact scores
             df['impact_score'] = df.apply(calculate_impact_score, axis=1)
             
-            # Filter for Bitcoin-related news using comprehensive keywords
+            # Filter for Bitcoin-related news using keywords
             bitcoin_keywords = [
                 'bitcoin', 'btc', 'crypto', 'cryptocurrency', 'blockchain', 'satoshi',
                 'digital currency', 'virtual currency', 'crypto market', 'crypto trading'
@@ -488,11 +488,11 @@ class BitcoinDataFetcher:
     
     def get_last_record(self) -> Optional[Dict]:
         """
-        Get the last Bitcoin record from the database with comprehensive details
+        Get the last Bitcoin record from the database with details
         
         This method fetches the most recent Bitcoin price record from the binance_klines table
         and includes all relevant trading metrics to provide evidence of successful database
-        connectivity and data availability for the lecturer.
+        connectivity and data availability.
         
         Returns:
             Dictionary with detailed last record information or None if not available
@@ -682,7 +682,7 @@ class BitcoinDataFetcher:
                     'ignore': ignore if 'ignore' in available_columns else 'N/A',
                     'record_timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
                     
-                    # Database evidence for lecturer
+                    # Database evidence
                     'database_evidence': {
                         'table_name': 'binance_klines',
                         'available_columns': available_columns,

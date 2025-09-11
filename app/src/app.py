@@ -3,15 +3,14 @@
 Bitcoin Price Predictor - Flask Web Application
 ===============================================
 
-A comprehensive, production-ready Bitcoin price prediction system that demonstrates
-advanced machine learning engineering practices for academic excellence.
+A Bitcoin price prediction system that uses multiple ML models and real-time data.
 
 SYSTEM OVERVIEW:
 - Multi-model ensemble approach (Prophet, XGBoost, LightGBM, Statistical)
 - Real-time news sentiment analysis integration
 - Interactive web interface with Plotly visualizations
 - Automated model retraining with drift detection
-- Comprehensive logging and monitoring system
+- Logging and monitoring system
 - Production-ready error handling and security
 
 ARCHITECTURE:
@@ -36,8 +35,8 @@ import json
 import os
 import threading
 import numpy as np
-from bitcoin_data_fetcher import BitcoinDataFetcher
-from bitcoin_predictor import BitcoinPredictor
+from .bitcoin_data_fetcher import BitcoinDataFetcher
+from .bitcoin_predictor import BitcoinPredictor
 import pandas as pd
 import plotly
 import plotly.graph_objs as go
@@ -52,7 +51,10 @@ load_dotenv()
 # =============================================================================
 
 # Initialize Flask application with security configurations
-app = Flask(__name__)
+# Set template and static folders relative to the app directory (not src/)
+app = Flask(__name__, 
+           template_folder='../templates',
+           static_folder='../static')
 app.secret_key = 'rmit_ml_course_demo_key_2025'  # In production, use environment variable
 
 # =============================================================================
@@ -149,7 +151,7 @@ def login():
     Security considerations:
     - In production, passwords should be hashed and stored securely
     - Session management should include timeout and CSRF protection
-    - Input validation should be more comprehensive
+    - Input validation could be improved
     
     Returns:
         Redirect: To dashboard on success, back to home on failure
@@ -318,7 +320,7 @@ def fetch_data():
             # Get the last record details with comprehensive information
             last_record = data_fetcher.get_last_record()
             if last_record:
-                # Create detailed last record summary for lecturer evidence
+                # Create detailed last record summary
                 last_record_info = f"""
                 Last Record Evidence:
                 • Time: {last_record['open_time']} to {last_record['close_time']}
@@ -571,7 +573,7 @@ def last_record_details():
     
     This endpoint provides comprehensive evidence of database connectivity and data
     availability, including all trading metrics from the binance_klines table.
-    Perfect for demonstrating to lecturers that the system is properly connected
+    Perfect for demonstrating that the system is properly connected
     to the PostgreSQL database and has access to real Bitcoin trading data.
     
     Returns:
@@ -599,7 +601,7 @@ def last_record_details():
         print("DEBUG: last_record retrieved successfully, building analysis")
         print(f"DEBUG: last_record keys: {list(last_record.keys()) if isinstance(last_record, dict) else 'Not a dict'}")
         
-        # Add additional context for lecturer understanding
+        # Add additional context for better understanding
         print("DEBUG: Building database_evidence section")
         record_analysis = {
             'database_evidence': {
@@ -685,8 +687,8 @@ def last_record_details():
             'volume_significance': 'High' if volume_num > 100 else 'Moderate'
         }
         
-        print("DEBUG: Building lecturer_notes section")
-        record_analysis['lecturer_notes'] = {
+        print("DEBUG: Building system_info section")
+        record_analysis['system_info'] = {
             'data_source': 'Binance API via Airflow DAG',
             'database': 'PostgreSQL (orchestration system)',
             'table_structure': 'Standard Binance klines format',

@@ -26,7 +26,7 @@ COPY . .
 RUN mkdir -p models logs data
 
 # Set environment variables
-ENV FLASK_APP=app.py
+ENV FLASK_APP=src/app.py
 ENV FLASK_ENV=production
 ENV PYTHONPATH=/app
 
@@ -38,4 +38,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:5000/health || exit 1
 
 # Run the application
-CMD ["python", "app.py"]
+CMD ["python", "-m", "src.app"]
