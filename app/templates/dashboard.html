@@ -990,7 +990,8 @@ async function updateChartWithRange(range, predictions = []) {
         switch(range) {
             case '10min':
                 // Last 10 minutes - get high resolution data
-                startDate = new Date(now.getTime() - 10 * 60 * 1000).toISOString().split('T')[0];
+                // Use current date for both start and end, let backend handle the 10 minutes logic
+                startDate = now.toISOString().split('T')[0];
                 endDate = now.toISOString().split('T')[0];
                 limit = 100; // High resolution for short time period
                 break;

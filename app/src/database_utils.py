@@ -138,6 +138,84 @@ class DatabaseUtils:
             print(f"FULL TRACEBACK:\n{error_details}")
             return pd.DataFrame()
     
+    def fetch_bitcoin_data_by_datetime(self, start_datetime: str, end_datetime: str, 
+                                     limit: int = None) -> pd.DataFrame:
+        """
+        Fetch Bitcoin price data from binance_klines table using datetime range
+        
+        Args:
+            start_datetime: Start datetime in YYYY-MM-DD HH:MM:SS format
+            end_datetime: End datetime in YYYY-MM-DD HH:MM:SS format
+            limit: Maximum number of records to fetch
+            
+        Returns:
+            DataFrame with Bitcoin price data
+        """
+        try:
+            conn = self.get_connection()
+            cursor = conn.cursor()
+            
+            # Build query with datetime filtering
+            query = """
+                SELECT 
+                    open_time,
+                    symbol,
+                    open,
+                    high,
+                    low,
+                    close,
+                    volume,
+                    taker_buy_base_volume,
+                    taker_buy_quote_volume
+                FROM binance_klines 
+                WHERE symbol = 'BTCUSDT'
+                AND open_time >= %s
+                AND open_time <= %s
+                ORDER BY open_time ASC
+            """
+            
+            params = [start_datetime, end_datetime]
+            
+            if limit:
+                query += f" LIMIT {limit}"
+            
+            self.logger.info(f"Executing datetime query: {query}")
+            self.logger.info(f"Query parameters: {params}")
+            
+            cursor.execute(query, params)
+            results = cursor.fetchall()
+            
+            if not results:
+                self.logger.info("No Bitcoin data found for datetime range")
+                return pd.DataFrame()
+            
+            # Convert to DataFrame
+            columns = [
+                'open_time', 'symbol', 'open', 'high', 'low', 'close',
+                'volume', 'taker_buy_base_volume', 'taker_buy_quote_volume'
+            ]
+            
+            df = pd.DataFrame(results, columns=columns)
+            
+            # Convert open_time to datetime
+            df['ds'] = pd.to_datetime(df['open_time'])
+            
+            # Use close price as y (target variable)
+            df['y'] = pd.to_numeric(df['close'], errors='coerce')
+            
+            # Remove rows with invalid prices
+            df = df.dropna(subset=['y'])
+            
+            self.logger.info(f"Fetched {len(df)} Bitcoin price records for datetime range")
+            return df
+            
+        except Exception as e:
+            self.logger.error(f"Error fetching Bitcoin data by datetime: {e}")
+            return pd.DataFrame()
+        finally:
+            if 'conn' in locals():
+                conn.close()
+    
     def fetch_news_data(self) -> pd.DataFrame:
         """
         Fetch and process crypto news data from PostgreSQL crypto_news table

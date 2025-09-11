@@ -405,8 +405,37 @@ def chart_data():
     limit = request.args.get('limit', type=int)
     
     try:
-        # Fetch Bitcoin price data with specified filters
-        data = data_fetcher.fetch_bitcoin_data(start_date, end_date, limit)
+        # Special handling for 10 minutes case
+        if limit == 100 and start_date and end_date:
+            # This is likely the 10 minutes case from frontend
+            # Get latest record and calculate 10 minutes back
+            latest_record = data_fetcher.get_last_record()
+            if latest_record and 'open_time' in latest_record:
+                from datetime import datetime, timedelta
+                import pandas as pd
+                
+                # Get the latest timestamp
+                latest_time = latest_record['open_time']
+                if isinstance(latest_time, str):
+                    latest_time = pd.to_datetime(latest_time)
+                elif hasattr(latest_time, 'to_pydatetime'):
+                    latest_time = latest_time.to_pydatetime()
+                
+                # Calculate 10 minutes back
+                ten_minutes_ago = latest_time - timedelta(minutes=10)
+                
+                # Convert to proper format for database query
+                start_datetime = ten_minutes_ago.strftime('%Y-%m-%d %H:%M:%S')
+                end_datetime = latest_time.strftime('%Y-%m-%d %H:%M:%S')
+                
+                # Fetch data with datetime range
+                data = data_fetcher.fetch_bitcoin_data_by_datetime(start_datetime, end_datetime, limit)
+            else:
+                # Fallback to regular method
+                data = data_fetcher.fetch_bitcoin_data(start_date, end_date, limit)
+        else:
+            # Regular data fetching
+            data = data_fetcher.fetch_bitcoin_data(start_date, end_date, limit)
         
         if data.empty:
             return jsonify({'error': 'No Bitcoin data available'}), 400
