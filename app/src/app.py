@@ -35,7 +35,7 @@ import json
 import os
 import threading
 import numpy as np
-from .bitcoin_data_fetcher import BitcoinDataFetcher
+from .database_utils import DatabaseUtils
 from .bitcoin_predictor import BitcoinPredictor
 import pandas as pd
 import plotly
@@ -78,7 +78,7 @@ DB_CONFIG = {
 
 # Initialize core system components
 # These components handle the main business logic of the application
-data_fetcher = BitcoinDataFetcher(DB_CONFIG)  # Handles database operations and data fetching
+data_fetcher = DatabaseUtils(DB_CONFIG)  # Handles database operations and data fetching
 predictor = BitcoinPredictor()                # Manages ML models and predictions
 
 # =============================================================================

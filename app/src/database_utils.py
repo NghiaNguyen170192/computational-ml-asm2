@@ -6,10 +6,14 @@ from typing import Dict, List, Tuple, Optional
 import logging
 import json
 
-class BitcoinDataFetcher:
+class DatabaseUtils:
     def __init__(self, db_config: Dict = None):
         """
-        Initialize Bitcoin data fetcher with PostgreSQL connection
+        Initialize database utilities for PostgreSQL data access
+        
+        This class provides methods to read Bitcoin price data and news data
+        from the PostgreSQL database. Data ingestion is handled by the
+        orchestration process (Airflow), this class only handles data retrieval.
         
         Args:
             db_config: Database configuration dictionary
