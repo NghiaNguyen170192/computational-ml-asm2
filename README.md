@@ -235,6 +235,32 @@ cd orchestration && docker-compose down
 cd orchestration && docker-compose restart
 ```
 
+## 📰 Sync more news (temporary script)
+
+Fetch recent crypto news via RSS, do light sentiment, and insert into Postgres `crypto_news`.
+
+Run inside the app container (recommended):
+
+```bash
+cd app
+docker-compose up --build -d bitcoin-predictor   # ensure latest code in container
+docker-compose exec bitcoin-predictor python temp_fetch_news.py
+```
+
+Notes:
+- Data goes to `crypto_news (date, sentiment JSONB, source, subject, text, title, url)`.
+- Script skips unique indexes; duplicates are allowed. You can add indexes later.
+- Some sources may return 403; we set a browser User‑Agent and follow redirects. The script continues.
+
+Run locally (optional):
+```bash
+cd app
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+export DB_HOST=postgres DB_PORT=5432 DB_NAME=airflow DB_USER=airflow DB_PASSWORD=airflow
+python temp_fetch_news.py
+```
+
 ## 🔍 **Troubleshooting**
 
 ### **App Won't Start**
