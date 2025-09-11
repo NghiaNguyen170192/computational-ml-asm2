@@ -37,6 +37,22 @@ This is done by editing the **hosts file** in your operating system to map names
    127.0.0.1   pgadmin.local
    127.0.0.1   minio.local
 
+# Overview
+
+This orchestration stack provides a production‑style data platform used by the prediction app. It includes:
+
+- **Apache Airflow** (scheduler, webserver, workers, triggerer) — schedules and monitors ETL jobs
+- **PostgreSQL** — system of record for Bitcoin klines (`binance_klines`) and news (`crypto_news`)
+- **Redis** — Celery broker backend used by Airflow
+- **MinIO** — object storage for raw/intermediate artifacts and Airflow remote logs
+- **Nginx** — optional reverse proxy to expose UIs via friendly hostnames
+
+Why Airflow?
+- Reliable scheduling with retries/backoff, clear logs and visibility for marking/grading
+- Backfill capability to reprocess historical windows safely
+- Pluggable operators (HTTP, Python, SQL) to evolve the pipeline over time
+- Clean separation between data ingestion and ML serving
+
 # Bootstrapping Airflow
 
 1. `cd .\orchestration`
@@ -98,6 +114,29 @@ This is done by editing the **hosts file** in your operating system to map names
 
   ```sh
   docker compose down
+  ```
+
+## Common Operations
+
+- **Reload DAGs after editing**
+  ```bash
+  ./manage-orchestration.sh reload
+  ```
+
+- **Trigger a DAG manually**
+  ```bash
+  ./manage-orchestration.sh trigger dag_binance_daily
+  ```
+
+- **Watch logs**
+  ```bash
+  ./manage-orchestration.sh logs airflow-worker
+  ./manage-orchestration.sh logs airflow-scheduler
+  ```
+
+- **Rebuild and restart Airflow services**
+  ```bash
+  ./manage-orchestration.sh build
   ```
 
 # Folder structure
