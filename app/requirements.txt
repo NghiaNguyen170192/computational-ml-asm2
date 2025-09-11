@@ -1,6 +1,6 @@
 # Web framework
 Flask==2.3.3
-Werkzeug==2.3.7
+Werkzeug==3.0.6
 
 # Data processing and machine learning
 pandas==1.5.3
