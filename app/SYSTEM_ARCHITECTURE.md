@@ -83,8 +83,8 @@ This is a comprehensive, production-ready Bitcoin price prediction system that d
 ┌─────────────────────────────────────────────────────────────────┐
 │                    EXTERNAL DATA LAYER                         │
 ├─────────────────────────────────────────────────────────────────┤
-│  News Sources (CSV Files)                                      │
-│  • cryptonews-2022-2023.csv                                   │
+│  News Source (PostgreSQL)                                      │
+│  • crypto_news table                                           │
 │  • Sentiment Analysis                                          │
 │  • Real-time News Updates                                      │
 └─────────────────────────────────────────────────────────────────┘
@@ -377,7 +377,7 @@ Prophet(
 - **Volume**: ~10,000 records per week
 - **Update Frequency**: Real-time
 
-#### **2. News Data (CSV Files)**
+#### **2. News Data (PostgreSQL)**
 - **Source**: Multiple crypto news sources
 - **Volume**: 31,000+ articles (2022-2023)
 - **Fields**: Date, title, text, sentiment, source, URL

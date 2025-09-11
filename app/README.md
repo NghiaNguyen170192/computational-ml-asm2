@@ -136,7 +136,7 @@ cd app
                                 │
                        ┌──────────────────┐
                        │   News Data      │
-                       │   (CSV File)     │
+                       │   (crypto_news)  │
                        └──────────────────┘
 ```
 
@@ -224,10 +224,10 @@ FLASK_ENV=production          # Flask environment
 - Collected via Airflow DAGs
 - Fields: open_time, symbol, open, high, low, close, volume, etc.
 
-### **2. News Data (cryptonews-2022-2023.csv)**
-- Crypto news articles with sentiment analysis
-- Fields: date, title, text, sentiment, source, etc.
-- Integrated as external regressors in Prophet model
+### **2. News Data (PostgreSQL: crypto_news table)**
+- Crypto news articles with sentiment analysis stored in PostgreSQL
+- Table: `crypto_news` (id, date, sentiment JSONB, source, subject, text, title, url)
+- Loaded directly from DB; no CSV is used
 
 ## 🎯 Usage
 

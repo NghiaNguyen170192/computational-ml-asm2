@@ -78,7 +78,7 @@ cd app
                                 │
                        ┌──────────────────┐
                        │   News Data      │
-                       │   (CSV File)     │
+                       │   (crypto_news)  │
                        └──────────────────┘
 ```
 
@@ -123,10 +123,35 @@ FLASK_ENV=production      # Flask environment
 - Collected via Airflow DAGs
 - Fields: open_time, symbol, open, high, low, close, volume, etc.
 
-### **2. News Data (cryptonews-2022-2023.csv)**
-- Crypto news articles with sentiment analysis
-- Fields: date, title, text, sentiment, source, etc.
+### **2. News Data (PostgreSQL: crypto_news table)**
+- Crypto news articles with sentiment analysis stored in PostgreSQL
+- Table: `crypto_news` (id, date, sentiment JSONB, source, subject, text, title, url)
 - Integrated as external regressors in Prophet model
+
+## 🧭 System Overview & Why This Architecture
+
+This repository contains two parts working together:
+
+- `orchestration/` — data platform (Airflow + Postgres + Redis + MinIO + Nginx)
+  - Ingests Bitcoin klines and (optionally) curated news into Postgres
+  - Schedules, retries, and monitors pipelines with a clear audit trail
+- `app/` — prediction web application (Flask)
+  - Reads from Postgres, engineers features, trains/serves models (XGBoost, LightGBM, fallback)
+  - Detects data drift and retrains on demand; surfaces evidence (news) alongside predictions
+
+Why Apache Airflow:
+- Reliable scheduling and retry policy for ingestion jobs
+- Easy backfill and idempotent runs for historical data
+- Strong observability (UI, logs, run durations, failure tracking)
+- Clean separation between data collection and ML serving
+
+Why Docker:
+- Reproducible environment for both orchestration and app
+- Isolation avoids dependency conflicts; portable from local to server
+- Faster onboarding and grading: one command to start the whole system
+- Environment variables for secrets/config; least‑privilege network exposure
+
+This mirrors a production‑style ML system: a robust data layer feeding a separate, user‑facing ML service.
 
 ## 🎯 **Usage**
 

@@ -19,7 +19,7 @@ ARCHITECTURE:
 - Backend: Flask web application with RESTful API
 - ML Layer: Multiple ML models with ensemble prediction
 - Data Layer: PostgreSQL database with real-time Bitcoin data
-- News Layer: CSV-based news sentiment analysis
+- News Layer: PostgreSQL-based news sentiment analysis (table `crypto_news`)
 
 AUTHOR: RMIT ML Course Student
 DATE: September 2025
