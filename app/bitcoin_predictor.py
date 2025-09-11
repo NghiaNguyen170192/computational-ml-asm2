@@ -50,6 +50,18 @@ class BitcoinPredictor:
         3. Tertiary: LightGBM gradient boosting model  
         4. Fallback: Statistical ensemble model
         
+        Rationale for XGBoost and LightGBM in crypto forecasting:
+        - Non‑linear patterns: prices react to regime shifts, volatility clusters and
+          exogenous drivers (news/volume). Tree ensembles capture non‑linear interactions
+          between engineered features without manual crosses.
+        - Rich feature set: our pipeline builds 50+ features (lags, returns, RSI/MACD,
+          Bollinger Bands, calendar effects, sentiment metrics). Boosted trees efficiently
+          search interactions in this space.
+        - Regularization & robustness: shrinkage, subsampling and depth constraints help
+          control overfitting on noisy crypto data.
+        - Speed: LightGBM’s histogram/leaf‑wise growth enables fast retrains when drift is
+          detected; XGBoost provides strong, stable baselines.
+        
         Args:
             model_dir: Directory to save trained models
             log_dir: Directory to save prediction logs

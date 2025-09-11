@@ -179,6 +179,24 @@ nano .env
 - **Model Evaluation**: Comprehensive metrics including RMSE, MAE, and MAPE
 - **Dockerized**: Consistent environment across all machines
 
+### 🤖 Why XGBoost and LightGBM?
+
+We include gradient boosting models (XGBoost and LightGBM) alongside the statistical fallback (and Prophet when available) to address characteristics of Bitcoin time series that classic models struggle with:
+
+- **Non‑linear relationships**: BTC prices react to regime shifts, volatility clusters, and exogenous signals (news, volume). Tree ensembles capture non‑linear feature interactions without hand‑crafted transformations.
+- **Rich feature space**: Our feature generator builds 50+ indicators (returns, lags, RSI/MACD, Bollinger Bands, calendar effects, news sentiment features). Boosted trees discover useful interactions automatically.
+- **Robustness and regularization**: Both models use shrinkage, column/row subsampling, and depth constraints to avoid overfitting on noisy crypto data.
+- **Speed and scalability**: LightGBM uses histogram‑based learning with leaf‑wise growth; XGBoost provides highly optimized implementations. Training remains fast enough for classroom demos and repeated retraining with drift.
+- **Interpretability aids**: Feature importances and SHAP (optional) help explain drivers (e.g., recent momentum vs. sentiment polarity).
+
+Model roles in this system:
+- **XGBoost**: balanced accuracy–stability, strong default for tabular time‑series features.
+- **LightGBM**: faster and typically stronger with many features; good for quick retrains under drift.
+- **Statistical fallback**: always available, provides bounded forecasts and human‑readable decomposition (trend/seasonality/momentum).
+- **Prophet (optional)**: when dependency constraints allow; focuses on trend/seasonality with external regressors.
+
+Selection logic: during training, we evaluate all available models on a hold‑out and pick the best RMSE. The UI displays the chosen model and its metrics.
+
 ## 🔧 Configuration
 
 ### **Environment Variables**
