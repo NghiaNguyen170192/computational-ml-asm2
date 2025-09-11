@@ -1,0 +1,1426 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Bitcoin Price Predictor{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-cog me-2"></i>
+                    Controls
+                </h5>
+            </div>
+            <div class="card-body">
+                <!-- Database Status -->
+                <div class="mb-4">
+                    <h6><i class="fas fa-database me-2"></i>Database Status</h6>
+                    {% if db_connected %}
+                    <div class="alert alert-success" role="alert">
+                        <i class="fas fa-check-circle me-1"></i>
+                        <strong>Connected to PostgreSQL</strong><br>
+                        <small>Database is running and accessible</small>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-danger" role="alert">
+                        <i class="fas fa-exclamation-triangle me-1"></i>
+                        <strong>Database Disconnected</strong><br>
+                        <small>Please start the orchestration system first</small>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-success" onclick="fetchData()">
+                            <i class="fas fa-sync me-2"></i>Test Connection & Load Data
+                        </button>
+                        <button class="btn btn-info" onclick="showLastRecordDetails()">
+                            <i class="fas fa-database me-2"></i>Show Last Record Details
+                        </button>
+                        <button class="btn btn-warning" onclick="checkDataDrift()">
+                            <i class="fas fa-chart-line me-2"></i>Check Data Drift
+                        </button>
+                        <button class="btn btn-success" onclick="retrainWithDriftDetection()">
+                            <i class="fas fa-sync-alt me-2"></i>Smart Retrain
+                        </button>
+                        <button class="btn btn-danger" onclick="deleteData()">
+                            <i class="fas fa-trash me-2"></i>Clear Model & Logs
+                        </button>
+                    </div>
+                    
+                    {% if min_date and max_date %}
+                    <small class="text-muted d-block mt-2">
+                        <i class="fas fa-calendar me-1"></i>
+                        Data range: {{ min_date }} to {{ max_date }}
+                    </small>
+                    {% endif %}
+                    
+                    {% if latest_price %}
+                    <div class="mt-2">
+                        <small class="text-muted">
+                            <i class="fas fa-bitcoin me-1"></i>
+                            Latest BTC Price: <strong>${{ "%.2f"|format(latest_price) }}</strong>
+                        </small>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Prediction Form -->
+                <div class="mb-4">
+                    <h6><i class="fas fa-crystal-ball me-2"></i>Bitcoin Price Prediction</h6>
+                    <form id="predictionForm">
+                        <div class="mb-3">
+                            <label class="form-label">Prediction Date</label>
+                            <input type="date" class="form-control" id="predictionDate" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Days Ahead</label>
+                            <input type="number" class="form-control" id="daysAhead" value="7" min="1" max="30" required>
+                        </div>
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-bitcoin me-2"></i>Predict Bitcoin Price
+                            </button>
+                            <button type="button" class="btn btn-warning" onclick="retrainModel()">
+                                <i class="fas fa-sync me-2"></i>Retrain Model
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Logs -->
+                <div class="mb-3">
+                    <h6><i class="fas fa-file-alt me-2"></i>Prediction Logs</h6>
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-info btn-sm" onclick="showLogs()">
+                            <i class="fas fa-eye me-2"></i>View Logs
+                        </button>
+                        <button class="btn btn-secondary btn-sm" onclick="clearLogs()">
+                            <i class="fas fa-broom me-2"></i>Clear Logs
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-8">
+        <!-- Progress Bar -->
+        <div class="progress-container" id="progressContainer">
+            <div class="card">
+                <div class="card-body">
+                    <h6><i class="fas fa-spinner fa-spin me-2"></i>Operation in Progress</h6>
+                    <div class="progress mb-2">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                             id="progressBar" role="progressbar" style="width: 0%"></div>
+                    </div>
+                    <small class="text-muted" id="progressMessage">Starting...</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Prediction Results -->
+        <div id="predictionResults"></div>
+
+        <!-- Sentiment Analysis Section -->
+        <div id="sentimentAnalysis" class="card" style="display: none;">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-heart me-2"></i>
+                    Market Sentiment Analysis
+                </h5>
+            </div>
+            <div class="card-body">
+                <div id="sentimentContent">
+                    <!-- Sentiment analysis will be populated here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Chart -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-line me-2"></i>
+                    Bitcoin Price Chart
+                </h5>
+                <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-outline-primary btn-sm" onclick="updateChartWithRange('all')">All</button>
+                    <button type="button" class="btn btn-outline-primary btn-sm" onclick="updateChartWithRange('6months')">6 Months</button>
+                    <button type="button" class="btn btn-outline-primary btn-sm" onclick="updateChartWithRange('3months')">3 Months</button>
+                    <button type="button" class="btn btn-outline-primary btn-sm" onclick="updateChartWithRange('1day')">1 Day</button>
+                    <button type="button" class="btn btn-outline-primary btn-sm" onclick="updateChartWithRange('10min')">10 Minutes</button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div id="bitcoinChart" style="height: 400px;"></div>
+                <small class="text-muted">
+                    <i class="fas fa-info-circle me-1"></i>
+                    Use the buttons above to change the time range. Make a prediction to see the Bitcoin price chart with predictions.
+                </small>
+            </div>
+        </div>
+
+        <!-- Logs Modal -->
+        <div class="modal fade" id="logsModal" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">
+                            <i class="fas fa-file-alt me-2"></i>Prediction Logs
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="log-container" id="logContainer">
+                            Loading logs...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Last Record Details Modal -->
+        <div class="modal fade" id="lastRecordModal" tabindex="-1">
+            <div class="modal-dialog modal-xl">
+                <div class="modal-content">
+                    <div class="modal-header bg-info text-white">
+                        <h5 class="modal-title">
+                            <i class="fas fa-database me-2"></i>Last Bitcoin Record Details - Database Evidence
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div id="lastRecordContainer">
+                            <div class="text-center">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                <p class="mt-2">Loading last record details...</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary" onclick="refreshLastRecord()">
+                            <i class="fas fa-sync me-2"></i>Refresh
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let progressInterval;
+
+// Set default date to today
+document.getElementById('predictionDate').value = new Date().toISOString().split('T')[0];
+
+// Load chart by default
+updateChartWithRange('all');
+
+// Prediction form handler
+document.getElementById('predictionForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const predictionDate = document.getElementById('predictionDate').value;
+    const daysAhead = document.getElementById('daysAhead').value;
+    
+    try {
+        showProgress('Making Bitcoin price prediction...');
+        
+        const response = await fetch('/predict', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                prediction_date: predictionDate,
+                days_ahead: parseInt(daysAhead)
+            })
+        });
+        
+        const result = await response.json();
+        hideProgress();
+        
+        if (response.ok) {
+            displayPredictionResults(result);
+            updateChart(result.predictions);
+        } else {
+            showAlert('Error: ' + result.error, 'danger');
+        }
+    } catch (error) {
+        hideProgress();
+        showAlert('Error: ' + error.message, 'danger');
+    }
+});
+
+async function fetchData() {
+    try {
+        showProgress('Fetching data...');
+        
+        const response = await fetch('/fetch_data', {method: 'POST'});
+        const result = await response.json();
+        
+        if (response.ok) {
+            // Start monitoring progress
+            monitorProgress();
+        } else {
+            hideProgress();
+            showAlert('Error: ' + result.error, 'danger');
+        }
+    } catch (error) {
+        hideProgress();
+        showAlert('Error: ' + error.message, 'danger');
+    }
+}
+
+async function deleteData() {
+    if (!confirm('Are you sure you want to delete all data? This cannot be undone.')) {
+        return;
+    }
+    
+    try {
+        const response = await fetch('/delete_data', {method: 'POST'});
+        const result = await response.json();
+        
+        if (response.ok) {
+            showAlert(result.message, 'success');
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            showAlert('Error: ' + result.error, 'danger');
+        }
+    } catch (error) {
+        showAlert('Error: ' + error.message, 'danger');
+    }
+}
+
+async function retrainModel() {
+    try {
+        showProgress('Retraining Bitcoin model...');
+        
+        const response = await fetch('/retrain', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({})
+        });
+        
+        const result = await response.json();
+        hideProgress();
+        
+        if (response.ok) {
+            showAlert('Bitcoin model retrained successfully', 'success');
+        } else {
+            showAlert('Error: ' + result.error, 'danger');
+        }
+    } catch (error) {
+        hideProgress();
+        showAlert('Error: ' + error.message, 'danger');
+    }
+}
+
+async function showLogs() {
+    try {
+        const response = await fetch('/prediction_logs');
+        const result = await response.json();
+        
+        if (response.ok) {
+            document.getElementById('logContainer').innerHTML = result.logs.join('');
+            new bootstrap.Modal(document.getElementById('logsModal')).show();
+        } else {
+            showAlert('Error loading logs: ' + result.error, 'danger');
+        }
+    } catch (error) {
+        showAlert('Error: ' + error.message, 'danger');
+    }
+}
+
+async function clearLogs() {
+    if (!confirm('Clear all prediction logs?')) return;
+    
+    try {
+        const response = await fetch('/clear_logs', {method: 'POST'});
+        const result = await response.json();
+        
+        if (response.ok) {
+            showAlert('Logs cleared', 'success');
+        } else {
+            showAlert('Error: ' + result.error, 'danger');
+        }
+    } catch (error) {
+        showAlert('Error: ' + error.message, 'danger');
+    }
+}
+
+async function showLastRecordDetails() {
+    try {
+        // Show modal
+        const modal = new bootstrap.Modal(document.getElementById('lastRecordModal'));
+        modal.show();
+        
+        // Load last record details
+        await loadLastRecordDetails();
+    } catch (error) {
+        showAlert('Error opening last record details: ' + error.message, 'danger');
+    }
+}
+
+async function loadLastRecordDetails() {
+    try {
+        const response = await fetch('/last_record_details');
+        const result = await response.json();
+        
+        if (response.ok) {
+            displayLastRecordDetails(result);
+        } else {
+            document.getElementById('lastRecordContainer').innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Error loading last record details: ${result.error}
+                </div>
+            `;
+        }
+    } catch (error) {
+        document.getElementById('lastRecordContainer').innerHTML = `
+            <div class="alert alert-danger">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                Error: ${error.message}
+            </div>
+        `;
+    }
+}
+
+function displayLastRecordDetails(data) {
+    const record = data.last_record;
+    const analysis = data.analysis;
+    
+    const html = `
+        <div class="row">
+            <!-- Database Evidence Section -->
+            <div class="col-md-6">
+                <div class="card mb-3">
+                    <div class="card-header bg-success text-white">
+                        <h6 class="mb-0"><i class="fas fa-check-circle me-2"></i>Database Connection Evidence</h6>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-unstyled mb-0">
+                            <li><strong>Status:</strong> <span class="text-success">${analysis.database_evidence.connection_status}</span></li>
+                            <li><strong>Table:</strong> ${analysis.database_evidence.table_accessed}</li>
+                            <li><strong>Symbol:</strong> ${analysis.database_evidence.symbol}</li>
+                            <li><strong>Record Retrieved:</strong> <span class="text-success">${analysis.database_evidence.record_retrieved}</span></li>
+                            <li><strong>Timestamp:</strong> ${analysis.database_evidence.timestamp}</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Lecturer Notes Section -->
+            <div class="col-md-6">
+                <div class="card mb-3">
+                    <div class="card-header bg-info text-white">
+                        <h6 class="mb-0"><i class="fas fa-graduation-cap me-2"></i>Lecturer Notes</h6>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-unstyled mb-0">
+                            <li><strong>Data Source:</strong> ${analysis.lecturer_notes.data_source}</li>
+                            <li><strong>Database:</strong> ${analysis.lecturer_notes.database}</li>
+                            <li><strong>Table Structure:</strong> ${analysis.lecturer_notes.table_structure}</li>
+                            <li><strong>Update Frequency:</strong> ${analysis.lecturer_notes.update_frequency}</li>
+                            <li><strong>Data Quality:</strong> <span class="text-success">${analysis.lecturer_notes.data_quality}</span></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <!-- Price Movement Section -->
+            <div class="col-md-6">
+                <div class="card mb-3">
+                    <div class="card-header bg-primary text-white">
+                        <h6 class="mb-0"><i class="fas fa-chart-line me-2"></i>Price Movement</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row text-center">
+                            <div class="col-3">
+                                <div class="border rounded p-2">
+                                    <small class="text-muted">Open</small><br>
+                                    <strong>$${record.open.toFixed(2)}</strong>
+                                </div>
+                            </div>
+                            <div class="col-3">
+                                <div class="border rounded p-2">
+                                    <small class="text-muted">High</small><br>
+                                    <strong class="text-success">$${record.high.toFixed(2)}</strong>
+                                </div>
+                            </div>
+                            <div class="col-3">
+                                <div class="border rounded p-2">
+                                    <small class="text-muted">Low</small><br>
+                                    <strong class="text-danger">$${record.low.toFixed(2)}</strong>
+                                </div>
+                            </div>
+                            <div class="col-3">
+                                <div class="border rounded p-2">
+                                    <small class="text-muted">Close</small><br>
+                                    <strong>$${record.close.toFixed(2)}</strong>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-3 text-center">
+                            <span class="badge ${record.price_change >= 0 ? 'bg-success' : 'bg-danger'} fs-6">
+                                ${record.price_change >= 0 ? '+' : ''}${record.price_change.toFixed(2)} (${record.price_change_pct >= 0 ? '+' : ''}${record.price_change_pct.toFixed(2)}%)
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Trading Activity Section -->
+            <div class="col-md-6">
+                <div class="card mb-3">
+                    <div class="card-header bg-warning text-dark">
+                        <h6 class="mb-0"><i class="fas fa-exchange-alt me-2"></i>Trading Activity</h6>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-unstyled mb-0">
+                            <li><strong>Number of Trades:</strong> ${record.number_of_trades.toLocaleString()}</li>
+                            <li><strong>Trading Intensity:</strong> <span class="badge ${analysis.analysis_metrics.trading_intensity === 'High' ? 'bg-danger' : 'bg-warning'}">${analysis.analysis_metrics.trading_intensity}</span></li>
+                            <li><strong>Buy Ratio:</strong> ${record.taker_buy_ratio.toFixed(1)}%</li>
+                            <li><strong>Buying Pressure:</strong> <span class="badge ${analysis.analysis_metrics.buying_pressure === 'High' ? 'bg-success' : 'bg-secondary'}">${analysis.analysis_metrics.buying_pressure}</span></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <!-- Volume Metrics Section -->
+            <div class="col-md-12">
+                <div class="card mb-3">
+                    <div class="card-header bg-secondary text-white">
+                        <h6 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Volume Metrics (Key Evidence for Lecturer)</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="text-center p-3 border rounded">
+                                    <h5 class="text-primary">${record.volume.toLocaleString()}</h5>
+                                    <small class="text-muted">Total Volume (BTC)</small>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-center p-3 border rounded">
+                                    <h5 class="text-success">${record.taker_buy_base_volume.toLocaleString()}</h5>
+                                    <small class="text-muted">Taker Buy Base Volume (BTC)</small>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-center p-3 border rounded">
+                                    <h5 class="text-info">${record.taker_buy_quote_asset_volume.toLocaleString()}</h5>
+                                    <small class="text-muted">Taker Buy Quote Volume (USDT)</small>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-center p-3 border rounded">
+                                    <h5 class="text-warning">${record.quote_asset_volume.toLocaleString()}</h5>
+                                    <small class="text-muted">Quote Asset Volume (USDT)</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <div class="alert alert-info">
+                                <h6><i class="fas fa-info-circle me-2"></i>Volume Analysis:</h6>
+                                <ul class="mb-0">
+                                    <li><strong>Taker Buy Ratio:</strong> ${record.taker_buy_ratio.toFixed(1)}% of total volume was from buy orders</li>
+                                    <li><strong>Quote Volume Ratio:</strong> ${record.quote_volume_ratio.toFixed(1)}% ratio of quote to base volume</li>
+                                    <li><strong>Volume Significance:</strong> <span class="badge ${analysis.analysis_metrics.volume_significance === 'High' ? 'bg-success' : 'bg-warning'}">${analysis.analysis_metrics.volume_significance}</span></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <!-- Time Period Section -->
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header bg-dark text-white">
+                        <h6 class="mb-0"><i class="fas fa-clock me-2"></i>Time Period Details</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>Open Time:</strong> ${record.open_time}</p>
+                                <p><strong>Close Time:</strong> ${record.close_time}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Duration:</strong> ${analysis.trading_data.time_period.duration_minutes}</p>
+                                <p><strong>Price Volatility:</strong> <span class="badge ${analysis.analysis_metrics.price_volatility === 'High' ? 'bg-danger' : 'bg-success'}">${analysis.analysis_metrics.price_volatility}</span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('lastRecordContainer').innerHTML = html;
+}
+
+async function refreshLastRecord() {
+    document.getElementById('lastRecordContainer').innerHTML = `
+        <div class="text-center">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2">Refreshing last record details...</p>
+        </div>
+    `;
+    await loadLastRecordDetails();
+}
+
+function displayPredictionResults(result) {
+    const html = `
+        <div class="card prediction-result">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-bitcoin me-2"></i>
+                    Bitcoin Price Prediction Results
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <h6><i class="fas fa-cogs me-2"></i>Model Information</h6>
+                        <ul class="list-unstyled">
+                            <li><strong>Symbol:</strong> BTCUSDT</li>
+                            <li><strong>Model Type:</strong> ${result.model_type}</li>
+                            <li><strong>Training Points:</strong> ${result.model_info.training_points}</li>
+                            <li><strong>Training Range:</strong> ${result.model_info.training_range[0]} to ${result.model_info.training_range[1]}</li>
+                            <li><strong>Trained:</strong> ${new Date(result.model_info.trained_date).toLocaleString()}</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-4">
+                        <h6><i class="fas fa-chart-line me-2"></i>Price Predictions</h6>
+                        ${result.predictions.slice(0, 3).map(p => `
+                            <div class="prediction-item mb-2 p-2 border rounded">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="fw-bold">${p.date}:</span>
+                                    <span class="h5 mb-0 text-primary">$${p.predicted_price.toFixed(2)}</span>
+                                </div>
+                                <div class="small text-muted">
+                                    Range: $${p.lower_bound.toFixed(2)} - $${p.upper_bound.toFixed(2)}
+                                </div>
+                                ${p.explanation ? `<div class="small text-info mt-1">
+                                    <i class="fas fa-info-circle me-1"></i>${p.explanation}
+                                </div>` : ''}
+                            </div>
+                        `).join('')}
+                        ${result.predictions.length > 3 ? `
+                            <div class="text-center mt-2">
+                                <small class="text-muted">
+                                    <i class="fas fa-ellipsis-h me-1"></i>
+                                    ${result.predictions.length - 3} more days predicted
+                                </small>
+                            </div>
+                        ` : ''}
+                        ${result.rmse ? `
+                            <div class="mt-3 alert alert-info">
+                                <i class="fas fa-chart-bar me-2"></i>
+                                <strong>Model Accuracy (RMSE):</strong> $${result.rmse.toFixed(2)}
+                            </div>
+                        ` : ''}
+                    </div>
+                    <div class="col-md-4">
+                        <h6><i class="fas fa-heart me-2"></i>Sentiment Analysis</h6>
+                        ${result.predictions.slice(0, 3).map(p => `
+                            <div class="sentiment-item mb-2 p-2 border rounded">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="fw-bold">${p.date}:</span>
+                                    <span class="badge bg-${p.sentiment_analysis ? p.sentiment_analysis.sentiment_color : 'secondary'}">
+                                        ${p.sentiment_analysis ? p.sentiment_analysis.overall_sentiment : 'Neutral'}
+                                    </span>
+                                </div>
+                                <div class="small text-muted">
+                                    Change: ${p.sentiment_analysis ? p.sentiment_analysis.price_change_percentage : 0}%
+                                </div>
+                                ${p.sentiment_analysis && p.sentiment_analysis.market_factors ? `
+                                    <div class="small text-info mt-1">
+                                        <i class="fas fa-chart-area me-1"></i>
+                                        ${p.sentiment_analysis.market_factors[0] ? p.sentiment_analysis.market_factors[0].factor : 'Market analysis'}
+                                    </div>
+                                ` : ''}
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                
+                <!-- Enhanced prediction details -->
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <h6><i class="fas fa-list me-2"></i>Detailed Predictions</h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Predicted Price</th>
+                                        <th>Confidence Range</th>
+                                        <th>Sentiment</th>
+                                        <th>Explanation</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${result.predictions.map(p => `
+                                        <tr>
+                                            <td>${p.date}</td>
+                                            <td class="fw-bold text-primary">$${p.predicted_price.toFixed(2)}</td>
+                                            <td>
+                                                <small>
+                                                    $${p.lower_bound.toFixed(2)} - $${p.upper_bound.toFixed(2)}
+                                                </small>
+                                            </td>
+                                            <td>
+                                                ${p.sentiment_analysis ? `
+                                                    <span class="badge bg-${p.sentiment_analysis.sentiment_color}">
+                                                        ${p.sentiment_analysis.overall_sentiment}
+                                                    </span>
+                                                    <br><small class="text-muted">
+                                                        ${p.sentiment_analysis.price_change_percentage}%
+                                                    </small>
+                                                ` : '<span class="badge bg-secondary">Neutral</span>'}
+                                            </td>
+                                            <td>
+                                                <small class="text-muted">
+                                                    ${p.explanation || 'Based on historical patterns'}
+                                                </small>
+                                                ${p.sentiment_analysis && p.sentiment_analysis.market_factors ? `
+                                                    <br><small class="text-info">
+                                                        <i class="fas fa-chart-area me-1"></i>
+                                                        ${p.sentiment_analysis.market_factors[0] ? p.sentiment_analysis.market_factors[0].factor : 'Market analysis'}
+                                                    </small>
+                                                ` : ''}
+                                            </td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    document.getElementById('predictionResults').innerHTML = html;
+    
+    // Show sentiment analysis if available
+    if (result.predictions && result.predictions[0] && result.predictions[0].sentiment_analysis) {
+        displaySentimentAnalysis(result.predictions);
+    }
+}
+
+function displaySentimentAnalysis(predictions) {
+    const sentimentHtml = `
+        <div class="row">
+            ${predictions.map(p => `
+                <div class="col-md-6 mb-3">
+                    <div class="card border-${p.sentiment_analysis ? p.sentiment_analysis.sentiment_color : 'secondary'}">
+                        <div class="card-header bg-${p.sentiment_analysis ? p.sentiment_analysis.sentiment_color : 'secondary'} text-white">
+                            <h6 class="mb-0">
+                                <i class="fas fa-calendar me-2"></i>
+                                ${p.date} - ${p.sentiment_analysis ? p.sentiment_analysis.overall_sentiment : 'Neutral'}
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-6">
+                                    <h6 class="text-primary">$${p.predicted_price.toFixed(2)}</h6>
+                                    <small class="text-muted">Predicted Price</small>
+                                </div>
+                                <div class="col-6">
+                                    <h6 class="text-${p.sentiment_analysis && p.sentiment_analysis.price_change_percentage > 0 ? 'success' : 'danger'}">
+                                        ${p.sentiment_analysis ? p.sentiment_analysis.price_change_percentage : 0}%
+                                    </h6>
+                                    <small class="text-muted">Price Change</small>
+                                </div>
+                            </div>
+                            
+                            ${p.sentiment_analysis && p.sentiment_analysis.market_factors ? `
+                                <hr>
+                                <h6><i class="fas fa-chart-area me-2"></i>Market Factors</h6>
+                                ${p.sentiment_analysis.market_factors.map(factor => `
+                                    <div class="mb-2">
+                                        <div class="d-flex justify-content-between">
+                                            <span class="fw-bold">${factor.factor}</span>
+                                            <span class="badge bg-${factor.impact === 'High' ? 'danger' : factor.impact === 'Medium' ? 'warning' : 'info'}">
+                                                ${factor.impact}
+                                            </span>
+                                        </div>
+                                        <small class="text-muted">${factor.description}</small>
+                                    </div>
+                                `).join('')}
+                            ` : ''}
+                            
+                            ${p.sentiment_analysis && p.sentiment_analysis.news_sentiment ? `
+                                <hr>
+                                <h6><i class="fas fa-newspaper me-2"></i>News Sentiment Evidence</h6>
+                                
+                                <!-- Evidence Type and Article Count -->
+                                <div class="mb-2">
+                                    <div class="d-flex justify-content-between">
+                                        <span><strong>Evidence Type:</strong></span>
+                                        <span class="badge bg-${p.sentiment_analysis.news_sentiment.evidence_type === 'Real News Data' ? 'success' : 'warning'}">
+                                            ${p.sentiment_analysis.news_sentiment.evidence_type}
+                                        </span>
+                                    </div>
+                                    ${p.sentiment_analysis.news_sentiment.article_count ? `
+                                        <div class="d-flex justify-content-between">
+                                            <span><strong>Articles Analyzed:</strong></span>
+                                            <span class="text-primary">${p.sentiment_analysis.news_sentiment.article_count}</span>
+                                        </div>
+                                    ` : ''}
+                                </div>
+                                
+                                <!-- Sentiment Metrics -->
+                                <div class="mb-2">
+                                    <div class="d-flex justify-content-between">
+                                        <span>Polarity:</span>
+                                        <span class="text-${p.sentiment_analysis.news_sentiment.polarity > 0 ? 'success' : 'danger'}">
+                                            ${p.sentiment_analysis.news_sentiment.polarity.toFixed(3)}
+                                        </span>
+                                    </div>
+                                    <div class="d-flex justify-content-between">
+                                        <span>Subjectivity:</span>
+                                        <span>${p.sentiment_analysis.news_sentiment.subjectivity.toFixed(3)}</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between">
+                                        <span>Category:</span>
+                                        <span class="badge bg-${p.sentiment_analysis.news_sentiment.sentiment_category === 'Positive' ? 'success' : p.sentiment_analysis.news_sentiment.sentiment_category === 'Negative' ? 'danger' : 'secondary'}">
+                                            ${p.sentiment_analysis.news_sentiment.sentiment_category}
+                                        </span>
+                                    </div>
+                                </div>
+                                
+                                <!-- Sentiment Distribution -->
+                                ${p.sentiment_analysis.news_sentiment.sentiment_distribution ? `
+                                    <div class="mb-2">
+                                        <small class="text-muted"><strong>Sentiment Distribution:</strong></small>
+                                        <div class="row text-center">
+                                            <div class="col-4">
+                                                <div class="text-success">${p.sentiment_analysis.news_sentiment.sentiment_distribution.positive}%</div>
+                                                <small class="text-muted">Positive</small>
+                                            </div>
+                                            <div class="col-4">
+                                                <div class="text-warning">${p.sentiment_analysis.news_sentiment.sentiment_distribution.neutral}%</div>
+                                                <small class="text-muted">Neutral</small>
+                                            </div>
+                                            <div class="col-4">
+                                                <div class="text-danger">${p.sentiment_analysis.news_sentiment.sentiment_distribution.negative}%</div>
+                                                <small class="text-muted">Negative</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ` : ''}
+                                
+                                <!-- Top News Sources -->
+                                ${p.sentiment_analysis.news_sentiment.top_sources ? `
+                                    <div class="mb-2">
+                                        <small class="text-muted"><strong>Top Sources:</strong></small>
+                                        <div class="mt-1">
+                                            ${Object.entries(p.sentiment_analysis.news_sentiment.top_sources).map(([source, count]) => `
+                                                <span class="badge bg-info me-1">${source} (${count})</span>
+                                            `).join('')}
+                                        </div>
+                                    </div>
+                                ` : ''}
+                                
+                                <!-- Date Range -->
+                                ${p.sentiment_analysis.news_sentiment.date_range ? `
+                                    <div class="mb-2">
+                                        <small class="text-muted">
+                                            <strong>Analysis Period:</strong> 
+                                            ${p.sentiment_analysis.news_sentiment.date_range.from} to ${p.sentiment_analysis.news_sentiment.date_range.to}
+                                        </small>
+                                    </div>
+                                ` : ''}
+                                
+                                <!-- Trending Articles Driving Sentiment -->
+                                ${p.sentiment_analysis.news_sentiment.relevant_articles && p.sentiment_analysis.news_sentiment.relevant_articles.length > 0 ? `
+                                    <div class="mt-3">
+                                        <small class="text-muted"><strong>📈 Articles Driving This Trend:</strong></small>
+                                        <div class="mt-2">
+                                            ${p.sentiment_analysis.news_sentiment.relevant_articles.slice(0, 3).map(article => `
+                                                <div class="card mb-2 border-${article.is_trending_driver ? 'primary' : 'secondary'}" style="font-size: 0.8rem;">
+                                                    <div class="card-body p-2">
+                                                        <div class="d-flex justify-content-between align-items-start">
+                                                            <div class="flex-grow-1">
+                                                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                                                    <h6 class="card-title mb-0" style="font-size: 0.9rem;">
+                                                                        <a href="${article.url}" target="_blank" class="text-decoration-none">
+                                                                            ${article.title}
+                                                                        </a>
+                                                                    </h6>
+                                                                    <div class="d-flex gap-1">
+                                                                        <span class="badge bg-${article.impact_color}">${article.trend_impact}</span>
+                                                                        <span class="badge bg-${article.sentiment === 'positive' ? 'success' : article.sentiment === 'negative' ? 'danger' : 'secondary'}">
+                                                                            ${article.sentiment} (${article.polarity})
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="d-flex justify-content-between mb-1">
+                                                                    <small class="text-muted">${article.source} • ${article.date}</small>
+                                                                    ${article.is_trending_driver ? '<small class="text-primary"><i class="fas fa-fire me-1"></i>Trending Driver</small>' : ''}
+                                                                </div>
+                                                                
+                                                                <!-- Key Phrases Driving Sentiment -->
+                                                                ${article.key_phrases && article.key_phrases.length > 0 ? `
+                                                                    <div class="mb-2">
+                                                                        <small class="text-muted"><strong>Key Phrases:</strong></small>
+                                                                        <div class="mt-1">
+                                                                            ${article.key_phrases.map(phrase => `
+                                                                                <span class="badge bg-light text-dark me-1" style="font-size: 0.7rem;">
+                                                                                    "${phrase}"
+                                                                                </span>
+                                                                            `).join('')}
+                                                                        </div>
+                                                                    </div>
+                                                                ` : ''}
+                                                                
+                                                                <p class="card-text mt-1 mb-0" style="font-size: 0.75rem;">
+                                                                    ${article.excerpt}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            `).join('')}
+                                        </div>
+                                    </div>
+                                ` : ''}
+                                
+                                <!-- Trending Text Analysis -->
+                                ${p.sentiment_analysis.news_sentiment.relevant_articles && p.sentiment_analysis.news_sentiment.relevant_articles.length > 0 ? `
+                                    <div class="mt-3">
+                                        <small class="text-muted"><strong>🔍 Text Analysis - What's Driving the Trend:</strong></small>
+                                        <div class="mt-2">
+                                            ${p.sentiment_analysis.news_sentiment.relevant_articles.filter(article => article.is_trending_driver).slice(0, 2).map(article => `
+                                                <div class="alert alert-${article.sentiment === 'positive' ? 'success' : 'danger'} py-2" style="font-size: 0.8rem;">
+                                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                                        <strong>${article.title}</strong>
+                                                        <span class="badge bg-${article.sentiment === 'positive' ? 'success' : 'danger'}">
+                                                            ${article.sentiment.toUpperCase()} TREND
+                                                        </span>
+                                                    </div>
+                                                    <div class="text-muted mb-2">
+                                                        <small>${article.source} • ${article.date} • Impact: ${article.trend_impact}</small>
+                                                    </div>
+                                                    <div class="mb-2">
+                                                        <strong>Key Sentiment Drivers:</strong>
+                                                        <div class="mt-1">
+                                                            ${article.key_phrases.map(phrase => `
+                                                                <span class="badge bg-${article.sentiment === 'positive' ? 'success' : 'danger'} me-1" style="font-size: 0.7rem;">
+                                                                    "${phrase}"
+                                                                </span>
+                                                            `).join('')}
+                                                        </div>
+                                                    </div>
+                                                    <div>
+                                                        <strong>Excerpt:</strong>
+                                                        <p class="mb-0 mt-1" style="font-style: italic;">
+                                                            "${article.excerpt}"
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            `).join('')}
+                                        </div>
+                                    </div>
+                                ` : ''}
+                                
+                                <!-- Fallback for simulated events -->
+                                ${p.sentiment_analysis.news_sentiment.predicted_events && !p.sentiment_analysis.news_sentiment.relevant_articles ? `
+                                    <div class="mt-2">
+                                        <small class="text-muted"><strong>Market Expectations:</strong></small>
+                                        <ul class="small mb-0">
+                                            ${p.sentiment_analysis.news_sentiment.predicted_events.map(event => `
+                                                <li>${event}</li>
+                                            `).join('')}
+                                        </ul>
+                                    </div>
+                                ` : ''}
+                            ` : ''}
+                        </div>
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+    `;
+    
+    document.getElementById('sentimentContent').innerHTML = sentimentHtml;
+    document.getElementById('sentimentAnalysis').style.display = 'block';
+}
+
+async function updateChart(predictions = []) {
+    await updateChartWithRange('all', predictions);
+}
+
+async function updateChartWithRange(range, predictions = []) {
+    try {
+        // Calculate date range based on selection with proper time handling
+        let startDate = null;
+        let endDate = null;
+        let limit = null;
+        
+        const now = new Date();
+        
+        switch(range) {
+            case '10min':
+                // Last 10 minutes - get high resolution data
+                startDate = new Date(now.getTime() - 10 * 60 * 1000).toISOString().split('T')[0];
+                endDate = now.toISOString().split('T')[0];
+                limit = 100; // High resolution for short time period
+                break;
+            case '1day':
+                // Last 24 hours - get hourly data
+                startDate = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+                endDate = now.toISOString().split('T')[0];
+                limit = 1000; // Hourly resolution
+                break;
+            case '3months':
+                // Last 3 months - get daily data
+                startDate = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+                endDate = now.toISOString().split('T')[0];
+                limit = 100; // Daily resolution
+                break;
+            case '6months':
+                // Last 6 months - get daily data
+                startDate = new Date(now.getTime() - 180 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+                endDate = now.toISOString().split('T')[0];
+                limit = 200; // Daily resolution
+                break;
+            case 'all':
+            default:
+                // All data - get daily data
+                limit = 500; // Daily resolution for all data
+                break;
+        }
+        
+        // Build query parameters
+        const params = new URLSearchParams();
+        if (startDate) params.append('start_date', startDate);
+        if (endDate) params.append('end_date', endDate);
+        if (limit) params.append('limit', limit);
+        
+        const response = await fetch(`/chart_data?${params.toString()}`);
+        const result = await response.json();
+        
+        if (response.ok && result && result.dates && result.prices) {
+            // Create enhanced historical price trace with hover information
+            const trace1 = {
+                x: result.dates,
+                y: result.prices,
+                type: 'scatter',
+                mode: 'lines',
+                name: 'Historical Bitcoin Price',
+                line: {color: '#FF6B35', width: 2},
+                hovertemplate: '<b>%{x}</b><br>' +
+                              'Price: $%{y:,.2f}<br>' +
+                              'Change: %{customdata[0]:.2f}%<br>' +
+                              '<extra></extra>',
+                customdata: (result.price_changes || []).map(change => [change * 100])
+            };
+            
+            const traces = [trace1];
+            
+            // Add predictions with enhanced hover information
+            if (predictions.length > 0) {
+                const trace2 = {
+                    x: predictions.map(p => p.date),
+                    y: predictions.map(p => p.predicted_price),
+                    type: 'scatter',
+                    mode: 'lines+markers',
+                    name: 'Predictions',
+                    line: {color: '#E74C3C', dash: 'dash', width: 3},
+                    marker: {color: '#E74C3C', size: 8},
+                    hovertemplate: '<b>%{x}</b><br>' +
+                                  'Predicted: $%{y:,.2f}<br>' +
+                                  'Sentiment: %{customdata[0]}<br>' +
+                                  'Change: %{customdata[1]}%<br>' +
+                                  'Explanation: %{customdata[2]}<br>' +
+                                  '<extra></extra>',
+                    customdata: predictions.map(p => [
+                        p.sentiment_analysis ? p.sentiment_analysis.overall_sentiment : 'Neutral',
+                        p.sentiment_analysis ? p.sentiment_analysis.price_change_percentage : 0,
+                        p.explanation || 'No explanation available'
+                    ])
+                };
+                traces.push(trace2);
+                
+                // Add confidence interval with hover information
+                if (predictions[0].lower_bound && predictions[0].upper_bound) {
+                    const trace3 = {
+                        x: predictions.map(p => p.date),
+                        y: predictions.map(p => p.upper_bound),
+                        type: 'scatter',
+                        mode: 'lines',
+                        name: 'Upper Bound',
+                        line: {color: 'rgba(231,76,60,0.3)', width: 0},
+                        showlegend: false,
+                        hovertemplate: '<b>%{x}</b><br>' +
+                                      'Upper Bound: $%{y:,.2f}<br>' +
+                                      '<extra></extra>'
+                    };
+                    const trace4 = {
+                        x: predictions.map(p => p.date),
+                        y: predictions.map(p => p.lower_bound),
+                        type: 'scatter',
+                        mode: 'lines',
+                        name: 'Confidence Interval',
+                        fill: 'tonexty',
+                        fillcolor: 'rgba(231,76,60,0.1)',
+                        line: {color: 'rgba(231,76,60,0.3)', width: 0},
+                        showlegend: true,
+                        hovertemplate: '<b>%{x}</b><br>' +
+                                      'Lower Bound: $%{y:,.2f}<br>' +
+                                      '<extra></extra>'
+                    };
+                    traces.push(trace4, trace3);
+                }
+            }
+            
+            // Enhanced layout with better formatting
+            const layout = {
+                title: {
+                    text: `Bitcoin (BTC) Price - ${range.toUpperCase()}`,
+                    font: {size: 16, color: '#2C3E50'}
+                },
+                xaxis: {
+                    title: 'Date',
+                    type: 'date',
+                    gridcolor: '#ECF0F1',
+                    showgrid: true,
+                    tickformat: '%Y-%m-%d',
+                    dtick: 'M12', // Show major ticks every 12 months (yearly)
+                    tickangle: 45,
+                    rangeslider: { visible: false }
+                },
+                yaxis: {
+                    title: 'Price (USD)',
+                    tickformat: '$,.0f',
+                    gridcolor: '#ECF0F1',
+                    showgrid: true
+                },
+                hovermode: 'x unified',
+                plot_bgcolor: 'rgba(0,0,0,0)',
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                font: {color: '#2C3E50'},
+                legend: {
+                    orientation: 'h',
+                    y: -0.2,
+                    x: 0.5,
+                    xanchor: 'center'
+                },
+                margin: {t: 50, b: 80, l: 80, r: 50}
+            };
+            
+            // Add metadata display
+            if (result.metadata) {
+                const metadata = result.metadata;
+                const infoText = `Data Points: ${metadata.data_points} | ` +
+                               `Range: $${metadata.min_price.toFixed(2)} - $${metadata.max_price.toFixed(2)} | ` +
+                               `Mean: $${metadata.mean_price.toFixed(2)}`;
+                
+                // Add annotation with metadata
+                layout.annotations = [{
+                    text: infoText,
+                    showarrow: false,
+                    xref: 'paper',
+                    yref: 'paper',
+                    x: 0.5,
+                    y: -0.3,
+                    xanchor: 'center',
+                    font: {size: 12, color: '#7F8C8D'}
+                }];
+            }
+            
+            Plotly.newPlot('bitcoinChart', traces, layout, {responsive: true});
+            
+            // Update button states
+            document.querySelectorAll('.btn-group .btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            // Find the button that matches the selected range and activate it
+            const activeButton = document.querySelector(`[onclick*="${range}"]`);
+            if (activeButton) {
+                activeButton.classList.add('active');
+            }
+        } else {
+            const errorMsg = result?.error || 'Unknown error occurred';
+            console.error('Chart data error:', result);
+            showAlert('Error loading chart data: ' + errorMsg, 'danger');
+        }
+    } catch (error) {
+        console.error('Error updating chart:', error);
+        showAlert('Error loading chart data: ' + error.message, 'danger');
+    }
+}
+
+function showProgress(message) {
+    document.getElementById('progressContainer').style.display = 'block';
+    document.getElementById('progressMessage').textContent = message;
+}
+
+function hideProgress() {
+    document.getElementById('progressContainer').style.display = 'none';
+    if (progressInterval) {
+        clearInterval(progressInterval);
+    }
+}
+
+function monitorProgress() {
+    progressInterval = setInterval(async () => {
+        try {
+            const response = await fetch('/progress');
+            const progress = await response.json();
+            
+            document.getElementById('progressBar').style.width = progress.current + '%';
+            document.getElementById('progressMessage').textContent = progress.message;
+            
+            if (progress.status === 'completed') {
+                hideProgress();
+                showAlert('Operation completed successfully', 'success');
+                setTimeout(() => location.reload(), 1500);
+            } else if (progress.status === 'error') {
+                hideProgress();
+                showAlert(progress.message, 'danger');
+            }
+        } catch (error) {
+            console.error('Error monitoring progress:', error);
+        }
+    }, 1000);
+}
+
+function showAlert(message, type) {
+    const alert = document.createElement('div');
+    alert.className = `alert alert-${type} alert-dismissible fade show`;
+    alert.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    document.querySelector('.container').insertBefore(alert, document.querySelector('.container').firstChild);
+    
+    setTimeout(() => {
+        if (alert.parentNode) {
+            alert.remove();
+        }
+    }, 5000);
+}
+
+// Data Drift Detection Functions
+function checkDataDrift() {
+    const button = event.target;
+    const originalText = button.innerHTML;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Checking Drift...';
+    button.disabled = true;
+    
+    fetch('/check_drift', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            showAlert('Error: ' + data.error, 'danger');
+        } else {
+            displayDriftResults(data);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showAlert('Error checking data drift: ' + error.message, 'danger');
+    })
+    .finally(() => {
+        button.innerHTML = originalText;
+        button.disabled = false;
+    });
+}
+
+function displayDriftResults(driftData) {
+    const modal = document.createElement('div');
+    modal.className = 'modal fade';
+    modal.innerHTML = `
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-chart-line me-2"></i>Data Drift Detection Results
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Drift Status</h6>
+                            <div class="alert ${driftData.drift_detected ? 'alert-warning' : 'alert-success'}">
+                                <strong>${driftData.drift_detected ? 'Drift Detected' : 'No Drift Detected'}</strong>
+                                <br><small>${driftData.reason || 'Analysis completed'}</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Recommendations</h6>
+                            <ul class="list-group list-group-flush">
+                                ${driftData.recommendations ? driftData.recommendations.map(rec => 
+                                    `<li class="list-group-item">${rec}</li>`
+                                ).join('') : '<li class="list-group-item">No specific recommendations</li>'}
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    ${driftData.tests_performed ? `
+                    <h6 class="mt-3">Statistical Tests Performed</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Test</th>
+                                    <th>Statistic</th>
+                                    <th>P-Value</th>
+                                    <th>Significant</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${driftData.tests_performed.map(test => `
+                                    <tr>
+                                        <td>${test.test}</td>
+                                        <td>${test.statistic ? test.statistic.toFixed(4) : 'N/A'}</td>
+                                        <td>${test.p_value ? test.p_value.toFixed(4) : 'N/A'}</td>
+                                        <td>
+                                            <span class="badge ${test.significant ? 'bg-warning' : 'bg-success'}">
+                                                ${test.significant ? 'Yes' : 'No'}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                    ` : ''}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    ${driftData.drift_detected ? 
+                        '<button type="button" class="btn btn-success" onclick="retrainWithDriftDetection(); bootstrap.Modal.getInstance(this.closest(\'.modal\')).hide();">Retrain Model</button>' : 
+                        ''
+                    }
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    const bsModal = new bootstrap.Modal(modal);
+    bsModal.show();
+    
+    // Clean up modal after it's hidden
+    modal.addEventListener('hidden.bs.modal', () => {
+        document.body.removeChild(modal);
+    });
+}
+
+function retrainWithDriftDetection() {
+    const button = event.target;
+    const originalText = button.innerHTML;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Retraining...';
+    button.disabled = true;
+    
+    fetch('/retrain_with_drift_detection', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            showAlert('Error: ' + data.error, 'danger');
+        } else {
+            displayRetrainResults(data);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showAlert('Error retraining model: ' + error.message, 'danger');
+    })
+    .finally(() => {
+        button.innerHTML = originalText;
+        button.disabled = false;
+    });
+}
+
+function displayRetrainResults(retrainData) {
+    const modal = document.createElement('div');
+    modal.className = 'modal fade';
+    modal.innerHTML = `
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-sync-alt me-2"></i>Smart Retraining Results
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert ${retrainData.retrained ? 'alert-success' : 'alert-info'}">
+                        <strong>${retrainData.retrained ? 'Model Retrained Successfully' : 'No Retraining Needed'}</strong>
+                        <br><small>${retrainData.reason}</small>
+                    </div>
+                    
+                    ${retrainData.drift_detected ? `
+                    <div class="alert alert-warning">
+                        <strong>Data Drift Detected:</strong> The model was retrained due to detected changes in the data distribution.
+                    </div>
+                    ` : ''}
+                    
+                    ${retrainData.training_result ? `
+                    <h6>Training Details</h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <strong>Status:</strong> ${retrainData.training_result.status}<br>
+                            <strong>Data Points:</strong> ${retrainData.training_result.data_points || 'N/A'}<br>
+                            <strong>Date Range:</strong> ${retrainData.training_result.date_range ? retrainData.training_result.date_range.join(' to ') : 'N/A'}
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Models Trained:</strong> ${retrainData.training_result.models_trained ? retrainData.training_result.models_trained.length : 0}<br>
+                            <strong>Best Model:</strong> ${retrainData.training_result.training_summary ? retrainData.training_result.training_summary.best_model : 'N/A'}
+                        </div>
+                    </div>
+                    ` : ''}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    ${retrainData.retrained ? 
+                        '<button type="button" class="btn btn-primary" onclick="location.reload();">Refresh Dashboard</button>' : 
+                        ''
+                    }
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    const bsModal = new bootstrap.Modal(modal);
+    bsModal.show();
+    
+    // Clean up modal after it's hidden
+    modal.addEventListener('hidden.bs.modal', () => {
+        document.body.removeChild(modal);
+    });
+}
+</script>
+{% endblock %}
