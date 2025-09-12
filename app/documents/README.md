@@ -200,21 +200,6 @@ Each article is displayed with comprehensive metadata and analysis:
 - **Key Phrases**: "altseason indicators surged to 76 this week, marking the highest crypto"
 - **Summary**: "Altseason indicators surged to 76 this week, marking the highest crypto market levels since December as altcoins outperformed Bitcoin."
 
-**Article 4: Bitcoin Bull Run Analysis**
-- **Headline**: "Bitcoin Bulls Beware, South Korean Kospi Setting Record Highs Could Stop BTC's Bull Run: Analyst"
-- **Source**: CoinDesk · 2025-09-11 06:02
-- **Impact**: High Impact (red badge)
-- **Sentiment**: positive (1) (green badge)
-- **Summary**: "Alphractal called Kospi's record high an incremental signal that bitcoin's bull run may be nearing an end."
-
-**Article 5: Dogecoin and Bitcoin Performance**
-- **Headline**: "Dogecoin Leads Gain, Bitcoin Pops to $114K as M2 Setup Opens BTC Catchup Trade"
-- **Source**: CoinDesk · 2025-09-11 05:44
-- **Impact**: High Impact (red badge)
-- **Sentiment**: positive (1) (green badge)
-- **Key Phrases**: "trades below fair value relative to money supply growth, a pattern that has preceded rallies."
-- **Summary**: "Crypto edged higher with bitcoin near $114K and DOGE leading, while a CF Benchmarks model says BTC trades below fair value relative to money supply growth, a pattern that has preceded rallies."
-
 #### Analysis Features
 - **Consistent High Impact**: All articles marked as "High Impact" indicating significant market influence
 - **Positive Sentiment**: All articles show "positive (1)" sentiment score
