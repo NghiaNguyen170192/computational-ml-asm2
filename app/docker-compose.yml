@@ -1,5 +1,5 @@
 services:
-  bitcoin-predictor:
+  bitcoinpredictor:
     build: .
     expose:
       - "5000"
@@ -21,7 +21,7 @@ services:
     networks:
       nginx-network:
         aliases:
-          - bitcoin-predictor   
+          - bitcoinpredictor   
     restart: unless-stopped
 
 networks:
@@ -38,7 +38,7 @@ networks:
   #   volumes:
   #     - ./nginx.conf:/etc/nginx/nginx.conf
   #   depends_on:
-  #     - bitcoin-predictor
+  #     - bitcoinpredictor
   #   networks:
   #     - bitcoin-network
   #   restart: unless-stopped

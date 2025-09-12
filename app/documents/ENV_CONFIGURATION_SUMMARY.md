@@ -51,7 +51,7 @@ DB_PASSWORD=airflow
 FLASK_APP=app.py
 FLASK_ENV=production
 FLASK_DEBUG=False
-SECRET_KEY=bitcoin-predictor-secret-key-2024-change-in-production
+SECRET_KEY=bitcoinpredictor-secret-key-2024-change-in-production
 ```
 
 ### **🤖 Machine Learning**
@@ -88,7 +88,7 @@ LOGIN_LOCKOUT_TIME=300
 ### **🐳 Docker**
 ```env
 DOCKER_NETWORK=orchestration_nginx-network
-CONTAINER_NAME=bitcoin-predictor
+CONTAINER_NAME=bitcoinpredictor
 APP_PORT=5000
 ```
 
@@ -97,7 +97,7 @@ APP_PORT=5000
 ### **1. Quick Start (Default Configuration)**
 ```bash
 # The .env file is already configured with working defaults
-docker-compose up --build -d bitcoin-predictor
+docker-compose up --build -d bitcoinpredictor
 ```
 
 ### **2. Custom Configuration**
@@ -107,7 +107,7 @@ cp .env.sample .env
 nano .env  # Edit as needed
 
 # Start with custom configuration
-docker-compose up --build -d bitcoin-predictor
+docker-compose up --build -d bitcoinpredictor
 ```
 
 ### **3. Environment-Specific Configuration**
@@ -166,13 +166,13 @@ cp .env.sample .env.production
 ### **Check Environment Variables**
 ```bash
 # View loaded environment variables
-docker exec -it bitcoin-predictor env | grep -E "(DB_|FLASK_|LOG_)"
+docker exec -it bitcoinpredictor env | grep -E "(DB_|FLASK_|LOG_)"
 ```
 
 ### **Test Database Connection**
 ```bash
 # Test database connectivity
-docker exec -it bitcoin-predictor python -c "
+docker exec -it bitcoinpredictor python -c "
 from bitcoin_data_fetcher import BitcoinDataFetcher
 import os
 db_config = {
@@ -190,10 +190,10 @@ print('✅ Database connection successful!')
 ### **Verify Application Startup**
 ```bash
 # Check application logs
-docker-compose logs bitcoin-predictor
+docker-compose logs bitcoinpredictor
 
 # Check if application is running
-curl http://localhost:5500/health
+curl http://localhost:5000/health
 ```
 
 ## 📚 **Documentation**

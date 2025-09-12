@@ -42,7 +42,7 @@ computational-ml-asm2/
 - **MinIO**: Object storage for data files
 
 ### **Bitcoin Predictor App** (`app/`)
-- **bitcoin-predictor**: Main Flask application
+- **bitcoinpredictor**: Main Flask application
 - **postgres**: Optional included database
 - **nginx**: Optional reverse proxy
 

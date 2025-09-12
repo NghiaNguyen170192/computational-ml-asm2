@@ -648,7 +648,7 @@ cd ../app
 docker-compose up --build -d
 
 # Access application
-open http://localhost:5500
+open http://localhost:5000
 ```
 
 ### 12.3 API Documentation

@@ -9,7 +9,7 @@ Environment variables (same as the app):
   DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASSWORD
 
 Run (inside the app container):
-  docker-compose exec bitcoin-predictor python temp_fetch_news.py
+  docker-compose exec bitcoinpredictor python temp_fetch_news.py
 """
 
 import os

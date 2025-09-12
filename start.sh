@@ -54,12 +54,12 @@ start_app() {
     cd app
     
     # Build and run the app
-    docker-compose up --build -d bitcoin-predictor
+    docker-compose up --build -d bitcoinpredictor
     
     if [ $? -eq 0 ]; then
         echo "✅ Bitcoin Price Predictor started successfully!"
-        echo "🌐 Access the app at: http://localhost:5500"
-        echo "🔍 Health check: http://localhost:5500/health"
+        echo "🌐 Access the app at: http://localhost:5000"
+        echo "🔍 Health check: http://localhost:5000/health"
         echo ""
         echo "📝 Demo credentials:"
         echo "   - Username: student, Password: ml2025"
@@ -67,9 +67,9 @@ start_app() {
         echo "   - Username: admin, Password: rmit2025"
         echo ""
         echo "📋 Useful commands:"
-        echo "   View logs: cd app && docker-compose logs -f bitcoin-predictor"
+        echo "   View logs: cd app && docker-compose logs -f bitcoinpredictor"
         echo "   Stop app: cd app && docker-compose down"
-        echo "   Restart: cd app && docker-compose restart bitcoin-predictor"
+        echo "   Restart: cd app && docker-compose restart bitcoinpredictor"
     else
         echo "❌ Failed to start Bitcoin Price Predictor"
         exit 1
