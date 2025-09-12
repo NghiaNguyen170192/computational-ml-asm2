@@ -158,12 +158,12 @@ docker-compose up -d
 
 # Start Bitcoin predictor
 cd ../app
-docker-compose up --build -d bitcoin-predictor
+docker-compose up --build -d bitcoinpredictor
 ```
 
 ### **Access the Application**
-- **Web Interface**: http://localhost:5500
-- **Health Check**: http://localhost:5500/health
+- **Web Interface**: http://localhost:5000
+- **Health Check**: http://localhost:5000/health
 
 ### **Test the System**
 1. Login with demo credentials

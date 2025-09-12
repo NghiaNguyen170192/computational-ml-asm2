@@ -17,13 +17,13 @@ fi
 ### **2. Configurable App Settings**
 ```bash
 # Before (hardcoded)
-APP_NAME="bitcoin-predictor"
-APP_PORT="5500"
+APP_NAME="bitcoinpredictor"
+APP_PORT="5000"
 APP_URL="http://localhost:${APP_PORT}"
 
 # After (configurable with fallbacks)
-APP_NAME="${CONTAINER_NAME:-bitcoin-predictor}"
-APP_PORT="${APP_PORT:-5500}"
+APP_NAME="${CONTAINER_NAME:-bitcoinpredictor}"
+APP_PORT="${APP_PORT:-5000}"
 APP_URL="http://localhost:${APP_PORT}"
 DOCKER_NETWORK="${DOCKER_NETWORK:-orchestration_nginx-network}"
 ```
@@ -44,7 +44,7 @@ Added new configuration section to both `.env` and `.env.sample`:
 # APPLICATION MANAGEMENT
 # =============================================================================
 # App management script settings
-APP_PORT=5500
+APP_PORT=5000
 ```
 
 ## ✅ **Benefits**
@@ -88,8 +88,8 @@ The script now uses these environment variables:
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `CONTAINER_NAME` | `bitcoin-predictor` | Docker container name |
-| `APP_PORT` | `5500` | Application port |
+| `CONTAINER_NAME` | `bitcoinpredictor` | Docker container name |
+| `APP_PORT` | `5000` | Application port |
 | `DOCKER_NETWORK` | `orchestration_nginx-network` | Docker network name |
 
 ## 🔄 **Backward Compatibility**

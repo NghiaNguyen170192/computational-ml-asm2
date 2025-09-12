@@ -18,8 +18,8 @@ if [ -f .env ]; then
 fi
 
 # App configuration (with environment variable fallbacks)
-APP_NAME="${CONTAINER_NAME:-bitcoin-predictor}"
-APP_PORT="${APP_PORT:-5500}"
+APP_NAME="${CONTAINER_NAME:-bitcoinpredictor}"
+APP_PORT="${APP_PORT:-5000}"
 APP_URL="http://localhost:${APP_PORT}"
 DOCKER_NETWORK="${DOCKER_NETWORK:-orchestration_nginx-network}"
 

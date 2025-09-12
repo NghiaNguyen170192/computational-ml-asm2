@@ -574,7 +574,7 @@ FROM python:3.9-slim as base
 ```
 
 #### **Docker Compose Services**
-- **bitcoin-predictor**: Main application container
+- **bitcoinpredictor**: Main application container
 - **postgres**: Database container (orchestration)
 - **nginx**: Reverse proxy (optional)
 

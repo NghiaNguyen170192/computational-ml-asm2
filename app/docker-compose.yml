@@ -1,11 +1,8 @@
-version: '3.8'
-
 services:
-  bitcoin-predictor:
+  bitcoinpredictor:
     build: .
-    container_name: bitcoin-predictor
-    ports:
-      - "5500:5000"
+    expose:
+      - "5000"
     env_file:
       - .env
     environment:
@@ -22,11 +19,13 @@ services:
       - ./logs:/app/logs
       - ./data:/app/data
     networks:
-      - orchestration_nginx-network
+      nginx-network:
+        aliases:
+          - bitcoinpredictor   
     restart: unless-stopped
 
 networks:
-  orchestration_nginx-network:
+  nginx-network:
     external: true
 
   # Optional: Add a reverse proxy for production (commented out to avoid port conflicts)
@@ -39,7 +38,7 @@ networks:
   #   volumes:
   #     - ./nginx.conf:/etc/nginx/nginx.conf
   #   depends_on:
-  #     - bitcoin-predictor
+  #     - bitcoinpredictor
   #   networks:
   #     - bitcoin-network
   #   restart: unless-stopped

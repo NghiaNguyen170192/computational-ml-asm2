@@ -88,7 +88,7 @@ ENABLE_CONSOLE_LOGGING=True         # Enable console logging
 ### **Secret Key**
 ```env
 # Change this in production!
-SECRET_KEY=bitcoin-predictor-secret-key-2024-change-in-production
+SECRET_KEY=bitcoinpredictor-secret-key-2024-change-in-production
 ```
 
 ### **Session Management**
@@ -105,12 +105,12 @@ LOGIN_LOCKOUT_TIME=300              # Lockout time in seconds
 ```env
 # Docker-specific settings
 DOCKER_NETWORK=orchestration_nginx-network  # Docker network name
-CONTAINER_NAME=bitcoin-predictor            # Container name
+CONTAINER_NAME=bitcoinpredictor            # Container name
 ```
 
 ### **Port Mapping**
 ```env
-# Application port (mapped to 5500 in docker-compose.yml)
+# Application port (mapped to 5000 in docker-compose.yml)
 APP_PORT=5000
 ```
 
@@ -168,7 +168,7 @@ ENABLE_TEST_DATA=True
 ### **Database Connection Issues**
 ```bash
 # Check if database is accessible
-docker exec -it bitcoin-predictor python -c "
+docker exec -it bitcoinpredictor python -c "
 from bitcoin_data_fetcher import BitcoinDataFetcher
 import os
 db_config = {
@@ -186,7 +186,7 @@ print('Database connection successful!')
 ### **Environment Variable Not Loading**
 ```bash
 # Check if .env file is loaded
-docker exec -it bitcoin-predictor python -c "
+docker exec -it bitcoinpredictor python -c "
 from dotenv import load_dotenv
 import os
 load_dotenv()
@@ -227,16 +227,16 @@ HEALTH_CHECK_RETRIES=3              # Health check retries
 ### **After Changing Configuration**
 ```bash
 # Restart the application
-docker-compose restart bitcoin-predictor
+docker-compose restart bitcoinpredictor
 
 # Or rebuild if needed
-docker-compose up --build -d bitcoin-predictor
+docker-compose up --build -d bitcoinpredictor
 ```
 
 ### **View Current Configuration**
 ```bash
 # Check environment variables in container
-docker exec -it bitcoin-predictor env | grep -E "(DB_|FLASK_|LOG_)"
+docker exec -it bitcoinpredictor env | grep -E "(DB_|FLASK_|LOG_)"
 ```
 
 ## 📖 **Best Practices**
@@ -281,7 +281,7 @@ docker exec -it bitcoin-predictor env | grep -E "(DB_|FLASK_|LOG_)"
 ## 📞 **Support**
 
 For configuration issues:
-1. Check the application logs: `docker-compose logs bitcoin-predictor`
-2. Verify environment variables: `docker exec -it bitcoin-predictor env`
+1. Check the application logs: `docker-compose logs bitcoinpredictor`
+2. Verify environment variables: `docker exec -it bitcoinpredictor env`
 3. Test database connection using the validation commands above
 4. Review this guide for common issues and solutions

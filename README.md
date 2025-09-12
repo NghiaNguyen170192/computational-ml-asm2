@@ -14,7 +14,7 @@ A comprehensive Bitcoin price prediction system that integrates real-time data f
 This will:
 1. ✅ Start the orchestration system (PostgreSQL, Airflow)
 2. ✅ Build and start the Bitcoin prediction app
-3. ✅ Make everything available at http://localhost:5500
+3. ✅ Make everything available at http://localhost:5000
 
 ### **Manual Docker Commands**
 
@@ -57,8 +57,8 @@ cd app
 
 ## 🌐 **Access the Application**
 
-- **Web Interface**: http://localhost:5500
-- **Health Check**: http://localhost:5500/health
+- **Web Interface**: http://localhost:5000
+- **Health Check**: http://localhost:5000/health
 
 ### **Login Credentials**
 - Username: `student` | Password: `ml2025`
@@ -114,7 +114,7 @@ FLASK_ENV=production      # Flask environment
 ### **Docker Services**
 
 1. **orchestration**: PostgreSQL, Airflow, MinIO (data collection)
-2. **bitcoin-predictor**: Main application (Flask) - connects to orchestration PostgreSQL
+2. **bitcoinpredictor**: Main application (Flask) - connects to orchestration PostgreSQL
 
 ## 📊 **Data Sources**
 
@@ -210,13 +210,13 @@ cd app
 
 ```bash
 # View logs
-cd app && docker-compose logs -f bitcoin-predictor
+cd app && docker-compose logs -f bitcoinpredictor
 
 # Stop app
 cd app && docker-compose down
 
 # Restart app
-cd app && docker-compose restart bitcoin-predictor
+cd app && docker-compose restart bitcoinpredictor
 
 # Rebuild app
 cd app && docker-compose up --build -d
@@ -243,8 +243,8 @@ Run inside the app container (recommended):
 
 ```bash
 cd app
-docker-compose up --build -d bitcoin-predictor   # ensure latest code in container
-docker-compose exec bitcoin-predictor python temp_fetch_news.py
+docker-compose up --build -d bitcoinpredictor   # ensure latest code in container
+docker-compose exec bitcoinpredictor python temp_fetch_news.py
 ```
 
 Notes:
@@ -270,7 +270,7 @@ python temp_fetch_news.py
 cd orchestration && docker-compose ps
 
 # Check app logs
-cd app && docker-compose logs bitcoin-predictor
+cd app && docker-compose logs bitcoinpredictor
 
 # Rebuild app
 cd app && docker-compose up --build -d
@@ -345,4 +345,4 @@ This project is part of the RMIT Machine Learning course assignment.
 
 ---
 
-**🚀 Ready to predict Bitcoin prices? Run `./start.sh` and visit http://localhost:5500!**
+**🚀 Ready to predict Bitcoin prices? Run `./start.sh` and visit http://localhost:5000!**

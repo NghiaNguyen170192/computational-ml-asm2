@@ -126,7 +126,7 @@ From the project root directory:
 This will:
 1. ✅ Start the orchestration system (PostgreSQL, Airflow, MinIO)
 2. ✅ Build and start the Bitcoin prediction app
-3. ✅ Make everything available at http://localhost:5500
+3. ✅ Make everything available at http://localhost:5000
 
 ### **Option 2: Manual Step-by-Step**
 
@@ -145,8 +145,8 @@ cp .env.sample .env  # Copy and edit configuration if needed
 
 ## 🌐 Access the Application
 
-- **Web Interface**: http://localhost:5500
-- **Health Check**: http://localhost:5500/health
+- **Web Interface**: http://localhost:5000
+- **Health Check**: http://localhost:5000/health
 - **Airflow UI**: http://localhost:8080 (airflow/airflow)
 
 ### **Login Credentials**
@@ -203,7 +203,7 @@ cd app
 # Rebuild everything
 cd app
 docker-compose down
-docker-compose up --build -d bitcoin-predictor
+docker-compose up --build -d bitcoinpredictor
 ```
 
 #### **Template/UI Changes**
@@ -305,7 +305,7 @@ FLASK_ENV=production          # Flask environment
 ### **Docker Services**
 
 1. **orchestration**: PostgreSQL, Airflow, MinIO (data collection)
-2. **bitcoin-predictor**: Main application (Flask) - connects to orchestration PostgreSQL
+2. **bitcoinpredictor**: Main application (Flask) - connects to orchestration PostgreSQL
 
 ## 📊 Data Sources
 
@@ -528,13 +528,13 @@ cd app
 
 ```bash
 # View logs
-cd app && docker-compose logs -f bitcoin-predictor
+cd app && docker-compose logs -f bitcoinpredictor
 
 # Stop app
 cd app && docker-compose down
 
 # Restart app
-cd app && docker-compose restart bitcoin-predictor
+cd app && docker-compose restart bitcoinpredictor
 
 # Rebuild app
 cd app && docker-compose up --build -d
@@ -590,7 +590,7 @@ cd orchestration && docker-compose restart postgres
 ### **Port Conflicts**
 
 If you get port conflicts:
-- **Port 5500**: Change in `app/docker-compose.yml`
+- **Port 5000**: Change in `app/docker-compose.yml`
 - **Port 80**: Check if nginx is running on your system
 - **Port 5432**: Check if PostgreSQL is running locally
 
@@ -741,7 +741,7 @@ For issues or questions:
 1. Check the troubleshooting section
 2. Check Docker logs: `./manage-app.sh logs`
 3. Verify orchestration system is running: `cd orchestration && docker-compose ps`
-4. Check system health: http://localhost:5500/health
+4. Check system health: http://localhost:5000/health
 
 ## 📄 License
 
@@ -749,4 +749,4 @@ This project is part of the RMIT Machine Learning course assignment.
 
 ---
 
-**🚀 Ready to predict Bitcoin prices? Run `./start.sh` and visit http://localhost:5500!**
+**🚀 Ready to predict Bitcoin prices? Run `./start.sh` and visit http://localhost:5000!**
