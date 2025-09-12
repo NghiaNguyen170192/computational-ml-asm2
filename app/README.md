@@ -1,63 +1,63 @@
 # Bitcoin Price Predictor - RMIT ML Course
 
-## 📋 Table of Contents
+## Table of Contents
 
-- [🎓 Goal](#-goal)
-  - [🏆 Key Achievements](#-key-achievements)
-  - [📊 System Performance Metrics](#-system-performance-metrics)
-- [📁 Project Structure](#-project-structure)
-- [📚 Documentation](#-documentation)
-- [📺 Screenshots](#-screenshots)
-- [🚀 Quick Start](#-quick-start)
+- [Goal](#goal)
+  - [Key Achievements](#key-achievements)
+  - [System Performance Metrics](#system-performance-metrics)
+- [Project Structure](#project-structure)
+- [Documentation](#documentation)
+- [Screenshots](#screenshots)
+- [Quick Start](#quick-start)
   - [Option 1: One-Command Startup (Recommended)](#option-1-one-command-startup-recommended)
   - [Option 2: Manual Step-by-Step](#option-2-manual-step-by-step)
-- [🌐 Access the Application](#-access-the-application)
+- [Access the Application](#access-the-application)
   - [Login Credentials](#login-credentials)
-- [🔄 App Management](#-app-management)
+- [App Management](#app-management)
   - [Using the Management Script](#using-the-management-script)
   - [When You Make Changes](#when-you-make-changes)
-- [🏗️ System Architecture](#️-system-architecture)
+- [System Architecture](#system-architecture)
   - [Quick Configuration](#quick-configuration)
   - [Key Configuration Options](#key-configuration-options)
   - [Configuration Files](#configuration-files)
-- [⚙️ Configuration](#️-configuration)
-- [📋 Prerequisites](#-prerequisites)
-- [🛠️ Features](#️-features)
-  - [🤖 Why XGBoost and LightGBM?](#-why-xgboost-and-lightgbm)
-- [🔧 Configuration](#-configuration)
+- [Configuration](#configuration)
+- [Prerequisites](#prerequisites)
+- [Features](#features)
+  - [Why XGBoost and LightGBM?](#why-xgboost-and-lightgbm)
+- [Configuration](#configuration)
   - [Environment Variables](#environment-variables)
   - [Docker Services](#docker-services)
-- [📊 Data Sources](#-data-sources)
+- [Data Sources](#data-sources)
   - [1. Bitcoin Price Data (binance_klines table)](#1-bitcoin-price-data-binance_klines-table)
   - [2. News Data (PostgreSQL: crypto_news table)](#2-news-data-postgresql-crypto_news-table)
-- [🎯 Usage](#-usage)
+- [Usage](#usage)
   - [Making Predictions](#making-predictions)
   - [Chart Time Ranges](#chart-time-ranges)
   - [Model Management](#model-management)
-- [🤖 Machine Learning Models & Performance](#-machine-learning-models--performance)
+- [Machine Learning Models & Performance](#machine-learning-models--performance)
   - [Primary Model: Facebook Prophet with News Sentiment Integration](#primary-model-facebook-prophet-with-news-sentiment-integration)
-- [🐳 Docker Commands](#-docker-commands)
-- [🔍 Troubleshooting](#-troubleshooting)
-- [🏭 Production Readiness & System Robustness](#-production-readiness--system-robustness)
-- [🎓 Assignment Requirements Compliance](#-assignment-requirements-compliance)
-- [📚 Technical Details](#-technical-details)
-- [🤝 Support](#-support)
-- [📄 License](#-license)
+- [Docker Commands](#docker-commands)
+- [Troubleshooting](#troubleshooting)
+- [Production Readiness & System Robustness](#production-readiness--system-robustness)
+- [Assignment Requirements Compliance](#assignment-requirements-compliance)
+- [Technical Details](#technical-details)
+- [Support](#support)
+- [License](#license)
 
 ---
 
-## 🎓 **GOAL**
+## GOAL
 
 A Bitcoin price prediction system that uses multiple ML models and real-time data. This system integrates Prophet, XGBoost, LightGBM, and statistical models with news sentiment analysis to provide Bitcoin price forecasts.
 
-### **🏆 Key Achievements**
-- **Multi-Model Ensemble**: Prophet, XGBoost, LightGBM, and Statistical models
-- **High Accuracy**: RMSE $2,847, R² 0.89, Directional Accuracy 78%
-- **Production Ready**: Error handling, logging, and monitoring
-- **User Friendly**: Intuitive web interface for non-technical users
-- **Academic Rigor**: Thorough analysis and critical evaluation
+### Key Achievements
+- Multi-Model Ensemble: Prophet, XGBoost, LightGBM, and Statistical models
+- High Accuracy: RMSE $2,847, R² 0.89, Directional Accuracy 78%
+- Production Ready: Error handling, logging, and monitoring
+- User Friendly: Intuitive web interface for non-technical users
+- Academic Rigor: Thorough analysis and critical evaluation
 
-### **📊 System Performance Metrics**
+### System Performance Metrics
 | Metric | Prophet + News | XGBoost | LightGBM | Statistical | Baseline |
 |--------|----------------|---------|----------|-------------|----------|
 | RMSE | $2,847 | $3,156 | $3,234 | $3,156 | $4,892 |
@@ -66,7 +66,7 @@ A Bitcoin price prediction system that uses multiple ML models and real-time dat
 | R² | 0.89 | 0.85 | 0.84 | 0.85 | 0.72 |
 | Directional Accuracy | 78% | 74% | 73% | 74% | 65% |
 
-## 📁 Project Structure
+##  Project Structure
 
 ```
 app/
@@ -90,7 +90,7 @@ app/
 └── README.md            # This file
 ```
 
-## 📚 Documentation
+##  Documentation
 
 All detailed documentation is available in the `documents/` folder:
 
@@ -100,7 +100,7 @@ All detailed documentation is available in the `documents/` folder:
 - **RUBRIC_EVALUATION.md**: Rubric compliance analysis
 - **ACADEMIC_REPORT.md**: Detailed academic report
 
-## 📺 Screenshots
+##  Screenshots
 
 ![Bitcoin Chart](/app/asset-images/Bitcoin%20Chart.png)
 
@@ -114,7 +114,7 @@ All detailed documentation is available in the `documents/` folder:
 
 ![Market Sentiment Analysis 3](/app/asset-images/Market%20Sentiment%20Analysis-3.png)
 
-## 🚀 Quick Start
+##  Quick Start
 
 ### **Option 1: One-Command Startup (Recommended)**
 
@@ -124,9 +124,9 @@ From the project root directory:
 ```
 
 This will:
-1. ✅ Start the orchestration system (PostgreSQL, Airflow, MinIO)
-2. ✅ Build and start the Bitcoin prediction app
-3. ✅ Make everything available at http://localhost:5000
+1.  Start the orchestration system (PostgreSQL, Airflow, MinIO)
+2.  Build and start the Bitcoin prediction app
+3.  Make everything available at http://localhost:5000
 
 ### **Option 2: Manual Step-by-Step**
 
@@ -143,7 +143,7 @@ cp .env.sample .env  # Copy and edit configuration if needed
 ./manage-app.sh start
 ```
 
-## 🌐 Access the Application
+##  Access the Application
 
 - **Web Interface**: http://localhost:5000
 - **Health Check**: http://localhost:5000/health
@@ -154,7 +154,7 @@ cp .env.sample .env  # Copy and edit configuration if needed
 - Username: `demo` | Password: `password123`
 - Username: `admin` | Password: `rmit2025`
 
-## 🔄 App Management
+##  App Management
 
 ### **Using the Management Script**
 
@@ -213,7 +213,7 @@ cd app
 ./manage-app.sh restart
 ```
 
-## 🏗️ System Architecture
+##  System Architecture
 
 ```
 ┌─────────────────┐    ┌────────────────────┐    ┌─────────────────┐
@@ -230,7 +230,7 @@ cd app
                        └──────────────────┘
 ```
 
-## ⚙️ Configuration
+##  Configuration
 
 The application uses environment variables for easy configuration management. All settings can be customized through `.env` files.
 
@@ -255,12 +255,12 @@ nano .env
 - `.env` - Your actual configuration (not committed to git)
 - `CONFIGURATION_GUIDE.md` - Detailed configuration guide
 
-## 📋 Prerequisites
+##  Prerequisites
 
 - **Docker** and **Docker Compose**
 - **Git** (to clone the repository)
 
-## 🛠️ Features
+##  Features
 
 - **Real-time Data**: Connects to PostgreSQL database populated by orchestration system
 - **News Sentiment Analysis**: Integrates crypto news sentiment for better predictions
@@ -269,7 +269,7 @@ nano .env
 - **Model Evaluation**: Comprehensive metrics including RMSE, MAE, and MAPE
 - **Dockerized**: Consistent environment across all machines
 
-### 🤖 Why XGBoost and LightGBM?
+###  Why XGBoost and LightGBM?
 
 We include gradient boosting models (XGBoost and LightGBM) alongside the statistical fallback (and Prophet when available) to address characteristics of Bitcoin time series that classic models struggle with:
 
@@ -287,7 +287,7 @@ Model roles in this system:
 
 Selection logic: during training, we evaluate all available models on a hold‑out and pick the best RMSE. The UI displays the chosen model and its metrics.
 
-## 🔧 Configuration
+##  Configuration
 
 ### **Environment Variables**
 
@@ -307,7 +307,7 @@ FLASK_ENV=production          # Flask environment
 1. **orchestration**: PostgreSQL, Airflow, MinIO (data collection)
 2. **bitcoinpredictor**: Main application (Flask) - connects to orchestration PostgreSQL
 
-## 📊 Data Sources
+##  Data Sources
 
 ### **1. Bitcoin Price Data (binance_klines table)**
 - Real-time Bitcoin price data from Binance API
@@ -319,7 +319,7 @@ FLASK_ENV=production          # Flask environment
 - Table: `crypto_news` (id, date, sentiment JSONB, source, subject, text, title, url)
 - Loaded directly from DB; no CSV is used
 
-## 🎯 Usage
+## Usage
 
 ### **Making Predictions**
 
@@ -346,7 +346,7 @@ Use the time range buttons to view different periods:
 - **View Logs**: Access prediction logs and model information
 - **Clear Data**: Reset models and logs
 
-## 🤖 Machine Learning Models & Performance
+##  Machine Learning Models & Performance
 
 ### **Primary Model: Facebook Prophet with News Sentiment Integration**
 
@@ -498,7 +498,7 @@ prediction = trend + seasonal + momentum * damping_factor
 - **Prediction Bounds**: Alerts for unusual predictions
 - **Model Drift Detection**: Automatic detection of model performance degradation
 
-## 🐳 Docker Commands
+##  Docker Commands
 
 ### **App Management (Recommended)**
 
@@ -553,7 +553,7 @@ cd orchestration && docker-compose down
 cd orchestration && docker-compose restart
 ```
 
-## 🔍 Troubleshooting
+##  Troubleshooting
 
 ### **App Won't Start**
 
@@ -594,7 +594,7 @@ If you get port conflicts:
 - **Port 80**: Check if nginx is running on your system
 - **Port 5432**: Check if PostgreSQL is running locally
 
-## 🏭 Production Readiness & System Robustness
+##  Production Readiness & System Robustness
 
 ### **System Design**
 
@@ -674,25 +674,25 @@ If you get port conflicts:
 - **Explanation Generation**: Human-readable prediction explanations
 - **Visualization**: Interactive charts with detailed hover information
 
-## 🎓 Assignment Requirements Compliance
+##  Assignment Requirements Compliance
 
 ### **Rubric Compliance Analysis**
 
 #### **System Design (Excellent)**
-- ✅ **Well-designed & Robust**: Production-ready architecture with comprehensive error handling
-- ✅ **Usable by Non-technical Users**: Intuitive interface with clear workflows
-- ✅ **Security**: Strong authentication, input validation, and secure credential handling
-- ✅ **Data Pipeline**: Robust data processing with quality monitoring and error recovery
-- ✅ **Monitoring**: Comprehensive logging, performance tracking, and health checks
-- ✅ **Self-updating**: Automated model retraining and data refresh
-- ✅ **Robustness**: Graceful degradation and fault tolerance
+-  **Well-designed & Robust**: Production-ready architecture with comprehensive error handling
+-  **Usable by Non-technical Users**: Intuitive interface with clear workflows
+-  **Security**: Strong authentication, input validation, and secure credential handling
+-  **Data Pipeline**: Robust data processing with quality monitoring and error recovery
+-  **Monitoring**: Comprehensive logging, performance tracking, and health checks
+-  **Self-updating**: Automated model retraining and data refresh
+-  **Robustness**: Graceful degradation and fault tolerance
 
 #### **Machine Learning (Excellent)**
-- ✅ **Algorithm Appropriateness**: Prophet perfectly suited for time series forecasting
-- ✅ **Strong Justification**: Detailed analysis of Prophet vs alternatives
-- ✅ **Correct Implementation**: Best practices with proper validation
-- ✅ **Comprehensive Evaluation**: Multiple metrics with benchmarking
-- ✅ **Problem Fit**: Results clearly solve Bitcoin price prediction problem
+-  **Algorithm Appropriateness**: Prophet perfectly suited for time series forecasting
+-  **Strong Justification**: Detailed analysis of Prophet vs alternatives
+-  **Correct Implementation**: Best practices with proper validation
+-  **Comprehensive Evaluation**: Multiple metrics with benchmarking
+-  **Problem Fit**: Results clearly solve Bitcoin price prediction problem
 
 ### **Key Differentiators**
 
@@ -704,7 +704,7 @@ If you get port conflicts:
 6. **Documentation**: Complete setup and usage instructions
 7. **Dockerization**: Consistent deployment across machines
 
-## 📚 Technical Details
+##  Technical Details
 
 ### **Prophet Model Configuration**
 
@@ -734,7 +734,7 @@ When Prophet is unavailable, the system uses:
 - Momentum analysis (recent price changes)
 - Volatility-based confidence intervals
 
-## 🤝 Support
+##  Support
 
 For issues or questions:
 
@@ -743,10 +743,10 @@ For issues or questions:
 3. Verify orchestration system is running: `cd orchestration && docker-compose ps`
 4. Check system health: http://localhost:5000/health
 
-## 📄 License
+##  License
 
 This project is part of the RMIT Machine Learning course assignment.
 
 ---
 
-**🚀 Ready to predict Bitcoin prices? Run `./start.sh` and visit http://localhost:5000!**
+** Ready to predict Bitcoin prices? Run `./start.sh` and visit http://localhost:5000!**

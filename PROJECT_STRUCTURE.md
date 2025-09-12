@@ -1,4 +1,4 @@
-# Project Structure
+# Bitcoin Predictor Project Structure
 
 ```
 computational-ml-asm2/
@@ -27,14 +27,14 @@ computational-ml-asm2/
     └── README_DOCKER.md        # Docker deployment guide
 ```
 
-## 🚀 **Quick Start**
+## **Quick Start**
 
 ```bash
 # One command to start everything
 ./start.sh
 ```
 
-## 🐳 **Docker Services**
+## **Docker Services**
 
 ### **Orchestration System** (`orchestration/`)
 - **PostgreSQL**: Database for Bitcoin price data
@@ -44,9 +44,8 @@ computational-ml-asm2/
 ### **Bitcoin Predictor App** (`app/`)
 - **bitcoinpredictor**: Main Flask application
 - **postgres**: Optional included database
-- **nginx**: Optional reverse proxy
 
-## 📁 **Key Files**
+## **Key Files**
 
 - `start.sh` - Main startup script
 - `app/app.py` - Flask web application
@@ -54,14 +53,14 @@ computational-ml-asm2/
 - `app/bitcoin_data_fetcher.py` - Database operations
 - `orchestration/docker-compose.yaml` - Data collection services
 
-## 🔧 **Configuration**
+## **Configuration**
 
 All configuration is done through:
 - Environment variables in `docker-compose.yml`
 - Database connection settings in `app.py`
 - Model parameters in `bitcoin_predictor.py`
 
-## ☁️ **Deployment**
+##  **Deployment**
 
 - **Local Development**: Use `./start.sh`
 - **AWS Deployment**: Use `app/deploy-to-aws.sh`

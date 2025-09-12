@@ -1,10 +1,10 @@
 # Bitcoin Price Prediction System - Complete Architecture Analysis
 
-## 🏗️ **System Overview**
+## System Overview
 
-This is a comprehensive, production-ready Bitcoin price prediction system that demonstrates advanced machine learning engineering practices. The system integrates real-time data, news sentiment analysis, and multiple ML models to provide accurate price forecasts with confidence intervals.
+This is a comprehensive, production-ready Bitcoin price prediction system that demonstrates advanced machine learning engineering practices. The system integrates real-time data, news sentiment analysis, and multiple ML models to provide accurate price forecasts with confidence intervals. I built this for my RMIT ML course assignment.
 
-## 🎯 **Problem Statement**
+## Problem Statement
 
 **Primary Problem**: Bitcoin price prediction is inherently challenging due to high volatility, market sentiment influence, and complex time series patterns. Traditional financial models fail to capture the unique characteristics of cryptocurrency markets.
 
@@ -21,7 +21,7 @@ This is a comprehensive, production-ready Bitcoin price prediction system that d
 - Automated model retraining
 - Comprehensive logging and monitoring
 
-## 🏛️ **System Architecture**
+## System Architecture
 
 ### **High-Level Architecture**
 
@@ -235,7 +235,7 @@ date,sentiment,source,subject,text,title,url
 2025-09-11 10:30:00,"{'class': 'positive', 'polarity': 0.4, 'subjectivity': 0.6}",CryptoNews,bitcoin,"Bitcoin reaches new milestone...","Bitcoin Institutional Adoption Accelerates","https://example.com/news/1"
 ```
 
-## 🤖 **Machine Learning Architecture**
+## **Machine Learning Architecture**
 
 ### **Model Selection Justification**
 
@@ -366,7 +366,7 @@ Prophet(
 | R² | 0.89 | 0.85 | 0.84 | 0.85 | 0.72 |
 | Directional Accuracy | 78% | 74% | 73% | 74% | 65% |
 
-## 📊 **Data Analysis & EDA**
+## **Data Analysis & EDA**
 
 ### **Data Sources**
 
@@ -413,7 +413,7 @@ Prophet(
 - **Neutral**: 25% of articles
 - **Correlation**: Strong correlation with price movements
 
-## 🔄 **System Workflow**
+## **System Workflow**
 
 ### **Prediction Workflow**
 
@@ -472,7 +472,7 @@ Prophet(
    - Log training results
    - Update drift detection baselines
 
-## 🛡️ **System Robustness & Security**
+## System Robustness & Security
 
 ### **Error Handling**
 
@@ -514,7 +514,7 @@ Prophet(
 - File system permissions
 - Log security
 
-## 📈 **Monitoring & Logging**
+## **Monitoring & Logging**
 
 ### **Comprehensive Logging System**
 
@@ -558,7 +558,7 @@ Prophet(
 - Feature importance changes
 - Drift detection alerts
 
-## 🚀 **Deployment & Scalability**
+## **Deployment & Scalability**
 
 ### **Docker Containerization**
 
@@ -592,7 +592,7 @@ FROM python:3.9-slim as base
 - Database query optimization
 - Model caching strategies
 
-## 🎯 **System Advantages**
+## **System Advantages**
 
 ### **Compared to Traditional Financial Models**
 
@@ -618,7 +618,7 @@ FROM python:3.9-slim as base
 4. **Educational**: Clear documentation and code
 5. **Extensible**: Easy to add new features
 
-## 📋 **System Requirements**
+## **System Requirements**
 
 ### **Hardware Requirements**
 - **CPU**: 2+ cores (4+ recommended)
@@ -651,7 +651,7 @@ FROM python:3.9-slim as base
 3. **Cloud Deployment**: AWS/Azure cloud deployment
 4. **API Service**: Public API for third-party integration
 
-## 📊 **Conclusion**
+## **Conclusion**
 
 This Bitcoin price prediction system represents a comprehensive, production-ready solution that demonstrates advanced machine learning engineering practices. The system successfully addresses the complex challenge of cryptocurrency price prediction through:
 
@@ -669,5 +669,3 @@ The system achieves high accuracy (RMSE: $2,847, R²: 0.89) while maintaining in
 - **User Experience**: Intuitive interface for non-technical users
 - **Documentation**: Comprehensive analysis and explanations
 - **Academic Rigor**: Thorough evaluation and critical analysis
-
-This system demonstrates the successful application of machine learning to solve real-world problems while maintaining high standards of software engineering and academic excellence.

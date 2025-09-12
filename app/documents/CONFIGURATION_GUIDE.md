@@ -1,10 +1,10 @@
 # Configuration Guide - Bitcoin Price Predictor
 
-## 📋 **Overview**
+## Overview
 
-This guide explains how to configure the Bitcoin Price Predictor application using environment variables. The application uses `.env` files for easy configuration management across different environments.
+This guide explains how to configure the Bitcoin Price Predictor application using environment variables. The application uses `.env` files for easy configuration management across different environments. I found this approach works well for deployment.
 
-## 🔧 **Configuration Files**
+## Configuration Files
 
 ### **`.env.sample`**
 - Template file with all available configuration options
@@ -18,7 +18,7 @@ This guide explains how to configure the Bitcoin Price Predictor application usi
 - **NEVER commit to version control**
 - Automatically loaded by the application
 
-## 🚀 **Quick Setup**
+## Quick Setup
 
 ### **1. Copy the Sample File**
 ```bash
@@ -35,9 +35,9 @@ nano .env  # or use your preferred editor
 - Secret key for security
 - Any other environment-specific settings
 
-## 📊 **Configuration Categories**
+## **Configuration Categories**
 
-### **🗄️ Database Configuration**
+### Database Configuration
 ```env
 # PostgreSQL connection settings
 DB_HOST=postgres                    # Database host (Docker container name)
@@ -47,7 +47,7 @@ DB_USER=airflow                     # Database username
 DB_PASSWORD=airflow                 # Database password
 ```
 
-### **🌐 Flask Application**
+### ** Flask Application**
 ```env
 # Flask application settings
 FLASK_APP=app.py                    # Main application file
@@ -56,7 +56,7 @@ FLASK_DEBUG=False                   # Debug mode
 SECRET_KEY=your-secret-key-here     # Session secret key
 ```
 
-### **🤖 Machine Learning**
+### ** Machine Learning**
 ```env
 # Model training settings
 TRAINING_DATA_DAYS=365              # Days of data for training
@@ -75,7 +75,7 @@ IMPACT_WEIGHT=0.2                   # Weight of impact score
 BITCOIN_KEYWORDS=bitcoin,btc,crypto # Keywords for news filtering
 ```
 
-### **📝 Logging**
+### ** Logging**
 ```env
 # Logging configuration
 LOG_LEVEL=INFO                      # Log level (DEBUG/INFO/WARNING/ERROR)
@@ -83,7 +83,7 @@ ENABLE_FILE_LOGGING=True            # Enable file logging
 ENABLE_CONSOLE_LOGGING=True         # Enable console logging
 ```
 
-## 🔒 **Security Configuration**
+## **Security Configuration**
 
 ### **Secret Key**
 ```env
@@ -99,7 +99,7 @@ MAX_LOGIN_ATTEMPTS=5                # Maximum login attempts
 LOGIN_LOCKOUT_TIME=300              # Lockout time in seconds
 ```
 
-## 🐳 **Docker Configuration**
+## **Docker Configuration**
 
 ### **Container Settings**
 ```env
@@ -114,7 +114,7 @@ CONTAINER_NAME=bitcoinpredictor            # Container name
 APP_PORT=5000
 ```
 
-## 🔧 **Environment-Specific Configurations**
+## **Environment-Specific Configurations**
 
 ### **Development Environment**
 ```env
@@ -142,7 +142,7 @@ LOG_LEVEL=DEBUG
 ENABLE_TEST_DATA=True
 ```
 
-## 📋 **Configuration Validation**
+## **Configuration Validation**
 
 ### **Required Variables**
 - `DB_HOST` - Database host
@@ -156,14 +156,14 @@ ENABLE_TEST_DATA=True
 - All other variables have sensible defaults
 - Can be overridden for specific environments
 
-## 🔄 **Configuration Loading Order**
+## **Configuration Loading Order**
 
 1. **Default values** (hardcoded in application)
 2. **Environment variables** (from system)
 3. **`.env` file** (from current directory)
 4. **Docker environment** (from docker-compose.yml)
 
-## 🚨 **Common Configuration Issues**
+## **Common Configuration Issues**
 
 ### **Database Connection Issues**
 ```bash
@@ -195,7 +195,7 @@ print('DB_PORT:', os.getenv('DB_PORT'))
 "
 ```
 
-## 📚 **Advanced Configuration**
+## **Advanced Configuration**
 
 ### **Custom Model Parameters**
 ```env
@@ -222,7 +222,7 @@ HEALTH_CHECK_TIMEOUT=10             # Health check timeout in seconds
 HEALTH_CHECK_RETRIES=3              # Health check retries
 ```
 
-## 🔄 **Configuration Updates**
+## **Configuration Updates**
 
 ### **After Changing Configuration**
 ```bash
@@ -239,26 +239,26 @@ docker-compose up --build -d bitcoinpredictor
 docker exec -it bitcoinpredictor env | grep -E "(DB_|FLASK_|LOG_)"
 ```
 
-## 📖 **Best Practices**
+## **Best Practices**
 
 ### **Security**
-- ✅ Use strong, unique secret keys
-- ✅ Never commit `.env` files to version control
-- ✅ Use different configurations for different environments
-- ✅ Regularly rotate passwords and API keys
+- Use strong, unique secret keys
+- Never commit `.env` files to version control
+- Use different configurations for different environments
+- Regularly rotate passwords and API keys
 
 ### **Performance**
-- ✅ Adjust logging levels based on environment
-- ✅ Configure appropriate timeouts
-- ✅ Set reasonable retry limits
+- Adjust logging levels based on environment
+- Configure appropriate timeouts
+- Set reasonable retry limits
 
 ### **Maintenance**
-- ✅ Document custom configurations
-- ✅ Use `.env.sample` as a template
-- ✅ Test configurations before deployment
-- ✅ Keep configurations in sync across environments
+- Document custom configurations
+- Use `.env.sample` as a template
+- Test configurations before deployment
+- Keep configurations in sync across environments
 
-## 🆘 **Troubleshooting**
+## **Troubleshooting**
 
 ### **Configuration Not Loading**
 1. Check if `.env` file exists in the correct directory
@@ -278,7 +278,7 @@ docker exec -it bitcoinpredictor env | grep -E "(DB_|FLASK_|LOG_)"
 3. Check application logs
 4. Validate configuration syntax
 
-## 📞 **Support**
+## **Troubleshoot**
 
 For configuration issues:
 1. Check the application logs: `docker-compose logs bitcoinpredictor`

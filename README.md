@@ -2,9 +2,9 @@
 
 A comprehensive Bitcoin price prediction system that integrates real-time data from PostgreSQL, news sentiment analysis, and advanced time series forecasting using Prophet.
 
-## 🚀 **Quick Start**
+## Quick Start
 
-### **One-Command Startup**
+### One-Command Startup
 
 ```bash
 # From project root directory
@@ -12,11 +12,13 @@ A comprehensive Bitcoin price prediction system that integrates real-time data f
 ```
 
 This will:
-1. ✅ Start the orchestration system (PostgreSQL, Airflow)
-2. ✅ Build and start the Bitcoin prediction app
-3. ✅ Make everything available at http://localhost:5000
+1. Start the orchestration system (PostgreSQL, Airflow)
+2. Build and start the Bitcoin prediction app
+3. Make everything available at http://localhost:5000
 
-### **Manual Docker Commands**
+Note: Make sure you have Docker installed before running this command.
+
+### Manual Docker Commands
 
 ```bash
 # 1. Start orchestration system
@@ -28,9 +30,9 @@ cd ../app
 docker-compose up --build -d
 ```
 
-### **App Management Script**
+### App Management Script
 
-For easier app management, use the provided script:
+For easier app management, you can use the provided script:
 
 ```bash
 # Go to app directory
@@ -55,17 +57,43 @@ cd app
 ./manage-app.sh help
 ```
 
-## 🌐 **Access the Application**
+## Access the Application
 
-- **Web Interface**: http://localhost:5000
-- **Health Check**: http://localhost:5000/health
+### Local Development
+- Web Interface: http://localhost:5000
+- Health Check: http://localhost:5000/health
 
-### **Login Credentials**
+### Production Deployment
+The application is deployed and running in production (as of September 2025):
+
+- Main Application: [https://bitcoinpredictor.nqtn.dev/](https://bitcoinpredictor.nqtn.dev/)
+- MinIO Storage: [https://minio.nqtn.dev/browser/binance](https://minio.nqtn.dev/browser/binance)
+- Airflow Dashboard: [https://airflow.nqtn.dev/home](https://airflow.nqtn.dev/home)
+- PostgreSQL Admin: [https://pgadmin.nqtn.dev/browser/](https://pgadmin.nqtn.dev/browser/)
+
+### Login Credentials
 - Username: `student` | Password: `ml2025`
 - Username: `demo` | Password: `password123`
 - Username: `admin` | Password: `rmit2025`
 
-## 🏗️ **System Architecture**
+### Production System Credentials
+
+#### Airflow
+- Username: `airflow` | Password: `airflow`
+- UID: `1000` | GID: `1000`
+
+#### PostgreSQL
+- Username: `airflow` | Password: `airflow`
+- Database: `airflow`
+
+#### pgAdmin
+- Email: `admin@admin.com` | Password: `admin`
+
+#### MinIO
+- Username: `minioadmin` | Password: `minioadmin`
+- Bucket: `binance`
+
+## System Architecture
 
 ```
 ┌─────────────────┐    ┌───────────────────┐    ┌─────────────────┐
@@ -82,23 +110,23 @@ cd app
                        └──────────────────┘
 ```
 
-## 📋 **Prerequisites**
+## Prerequisites
 
-- **Docker** and **Docker Compose**
-- **Git** (to clone the repository)
+- Docker and Docker Compose
+- Git (to clone the repository)
 
-## 🛠️ **Features**
+## Features
 
-- **Real-time Data**: Connects to PostgreSQL database populated by orchestration system
-- **News Sentiment Analysis**: Integrates crypto news sentiment for enhanced predictions
-- **Advanced ML Models**: Uses Facebook Prophet for time series forecasting with fallback models
-- **Interactive UI**: Modern web interface with real-time charts and confidence intervals
-- **Model Evaluation**: Comprehensive metrics including RMSE, MAE, and MAPE
-- **Dockerized**: Consistent environment across all machines
+- Real-time Data: Connects to PostgreSQL database populated by orchestration system
+- News Sentiment Analysis: Integrates crypto news sentiment for enhanced predictions
+- Advanced ML Models: Uses Facebook Prophet for time series forecasting with fallback models
+- Interactive UI: Modern web interface with real-time charts and confidence intervals
+- Model Evaluation: Comprehensive metrics including RMSE, MAE, and MAPE
+- Dockerized: Consistent environment across all machines
 
-## 🔧 **Configuration**
+## Configuration
 
-### **Environment Variables**
+### Environment Variables
 
 The app supports these environment variables:
 
@@ -111,24 +139,24 @@ DB_PASSWORD=airflow       # Database password
 FLASK_ENV=production      # Flask environment
 ```
 
-### **Docker Services**
+### Docker Services
 
-1. **orchestration**: PostgreSQL, Airflow, MinIO (data collection)
-2. **bitcoinpredictor**: Main application (Flask) - connects to orchestration PostgreSQL
+1. orchestration: PostgreSQL, Airflow, MinIO (data collection)
+2. bitcoinpredictor: Main application (Flask) - connects to orchestration PostgreSQL
 
-## 📊 **Data Sources**
+## Data Sources
 
-### **1. Bitcoin Price Data (binance_klines table)**
+### 1. Bitcoin Price Data (binance_klines table)
 - Real-time Bitcoin price data from Binance API
 - Collected via Airflow DAGs
 - Fields: open_time, symbol, open, high, low, close, volume, etc.
 
-### **2. News Data (PostgreSQL: crypto_news table)**
+### 2. News Data (PostgreSQL: crypto_news table)
 - Crypto news articles with sentiment analysis stored in PostgreSQL
 - Table: `crypto_news` (id, date, sentiment JSONB, source, subject, text, title, url)
 - Integrated as external regressors in Prophet model
 
-## 🧭 System Overview & Why This Architecture
+## System Overview & Why This Architecture
 
 This repository contains two parts working together:
 
@@ -151,38 +179,38 @@ Why Docker:
 - Faster onboarding and grading: one command to start the whole system
 - Environment variables for secrets/config; least‑privilege network exposure
 
-This mirrors a production‑style ML system: a robust data layer feeding a separate, user‑facing ML service.
+This mirrors a production‑style ML system: a robust data layer feeding a separate, user‑facing ML service. The architecture was designed to be scalable and maintainable.
 
-## 🎯 **Usage**
+## Usage
 
-### **Making Predictions**
+### Making Predictions
 
-1. **Login** using demo credentials
-2. **Test Connection**: Click "Test Connection & Load Data" to verify database connectivity
-3. **Make Prediction**:
+1. Login using demo credentials
+2. Test Connection: Click "Test Connection & Load Data" to verify database connectivity
+3. Make Prediction:
    - Select prediction date
    - Choose number of days ahead (1-30)
    - Click "Predict Bitcoin Price"
-4. **View Results**: See predictions with confidence intervals and model information
+4. View Results: See predictions with confidence intervals and model information
 
-### **Model Management**
+### Model Management
 
-- **Retrain Model**: Click "Retrain Model" to update with latest data
-- **View Logs**: Access prediction logs and model information
-- **Clear Data**: Reset models and logs
+- Retrain Model: Click "Retrain Model" to update with latest data
+- View Logs: Access prediction logs and model information
+- Clear Data: Reset models and logs
 
-## 📈 **Model Performance**
+## Model Performance
 
-The system provides comprehensive evaluation metrics:
+The system provides comprehensive evaluation metrics (these are the main ones we track):
 
-- **RMSE**: Root Mean Square Error
-- **MAE**: Mean Absolute Error  
-- **MAPE**: Mean Absolute Percentage Error
-- **Confidence Intervals**: Upper and lower bounds for predictions
+- RMSE: Root Mean Square Error
+- MAE: Mean Absolute Error  
+- MAPE: Mean Absolute Percentage Error
+- Confidence Intervals: Upper and lower bounds for predictions
 
-## 🐳 **Docker Commands**
+## Docker Commands
 
-### **App Management (Recommended)**
+### App Management (Recommended)
 
 Use the management script for easier control:
 
@@ -235,7 +263,7 @@ cd orchestration && docker-compose down
 cd orchestration && docker-compose restart
 ```
 
-## 📰 Sync more news (temporary script)
+## Sync more news (temporary script)
 
 Fetch recent crypto news via RSS, do light sentiment, and insert into Postgres `crypto_news`.
 
@@ -261,9 +289,9 @@ export DB_HOST=postgres DB_PORT=5432 DB_NAME=airflow DB_USER=airflow DB_PASSWORD
 python temp_fetch_news.py
 ```
 
-## 🔍 **Troubleshooting**
+## Troubleshooting
 
-### **App Won't Start**
+### App Won't Start
 
 ```bash
 # Check if orchestration is running
@@ -276,7 +304,7 @@ cd app && docker-compose logs bitcoinpredictor
 cd app && docker-compose up --build -d
 ```
 
-### **Database Connection Issues**
+### Database Connection Issues
 
 ```bash
 # Check database status
@@ -289,28 +317,28 @@ cd orchestration && docker-compose logs postgres
 cd orchestration && docker-compose restart postgres
 ```
 
-### **No Data Available**
+### No Data Available
 
 1. Wait for Airflow to collect data (check Airflow UI at http://localhost:8080)
 2. Manually trigger data collection DAGs
 3. Check if orchestration system is running properly
 
 
-## 🎓 **Assignment Requirements**
+## Assignment Requirements
 
-This system fulfills the ML assignment requirements:
+This system fulfills the ML assignment requirements (as far as I can tell):
 
-- ✅ **Real Machine Learning**: Prophet time series forecasting with news sentiment
-- ✅ **Complete System**: Web application with database integration
-- ✅ **User Interface**: Accessible web interface for normal users
-- ✅ **Data Processing**: Real-time data collection and processing
-- ✅ **Model Evaluation**: Comprehensive performance metrics
-- ✅ **Documentation**: Complete setup and usage instructions
-- ✅ **Dockerized**: Consistent deployment across machines
+- Real Machine Learning: Prophet time series forecasting with news sentiment
+- Complete System: Web application with database integration
+- User Interface: Accessible web interface for normal users
+- Data Processing: Real-time data collection and processing
+- Model Evaluation: Comprehensive performance metrics
+- Documentation: Complete setup and usage instructions
+- Dockerized: Consistent deployment across machines
 
-## 📚 **Technical Details**
+## Technical Details
 
-### **Prophet Model Configuration**
+### Prophet Model Configuration
 
 ```python
 Prophet(
@@ -323,14 +351,14 @@ Prophet(
 )
 ```
 
-### **News Sentiment Integration**
+### News Sentiment Integration
 
-- **Polarity**: Sentiment strength (-1 to 1)
-- **Subjectivity**: Opinion vs fact (0 to 1)
-- **Positive Ratio**: Percentage of positive news
-- **External Regressors**: Added to Prophet model for enhanced predictions
+- Polarity: Sentiment strength (-1 to 1)
+- Subjectivity: Opinion vs fact (0 to 1)
+- Positive Ratio: Percentage of positive news
+- External Regressors: Added to Prophet model for enhanced predictions
 
-## 🤝 **Support**
+## Support
 
 For issues or questions:
 
@@ -339,10 +367,6 @@ For issues or questions:
 3. Verify orchestration system is running: `docker-compose ps`
 4. Check system health: http://localhost:5000/health
 
-## 📄 **License**
-
-This project is part of the RMIT Machine Learning course assignment.
-
 ---
 
-**🚀 Ready to predict Bitcoin prices? Run `./start.sh` and visit http://localhost:5000!**
+### This project is part of the RMIT - COSC3013 Computational Machine Learning.
