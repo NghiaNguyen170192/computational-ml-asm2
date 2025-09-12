@@ -220,5 +220,5 @@ __marimo__/
 */logs/
 
 */data/*
-cloudflare.*
+#cloudflare.*
 *.pem
